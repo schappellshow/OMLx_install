@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Package dependency analyzer for OpenMandriva
-# This script helps identify which packages are dependencies vs explicit installs
+# Package list comparator for OpenMandriva
+# This script compares your current package list (packages.txt) with a clean OMLx-ROME install
+# (OM_clean_packages.txt) to identify packages you installed yourself
 
 set -e
 
@@ -23,144 +24,109 @@ print_section() {
     echo -e "\n${CYAN}--- $1 ---${NC}"
 }
 
-# Check if packages.txt exists
+# Check if required files exist
 if [[ ! -f "packages.txt" ]]; then
     echo -e "${RED}Error: packages.txt not found!${NC}"
+    echo "This should contain your current system's package list."
     exit 1
 fi
 
-print_header "OpenMandriva Package Dependency Analyzer"
+if [[ ! -f "OM_clean_packages.txt" ]]; then
+    echo -e "${RED}Error: OM_clean_packages.txt not found!${NC}"
+    echo "This should contain the package list from a clean OMLx-ROME install."
+    exit 1
+fi
 
-# Extract just package names (remove version info)
-echo -e "${YELLOW}Extracting package names...${NC}"
+print_header "OpenMandriva Package List Comparator"
+
+# Extract package names from current system (remove version info)
+echo -e "${YELLOW}Processing current system packages (packages.txt)...${NC}"
 grep -v '^[[:space:]]*$' packages.txt | \
 awk '{print $1}' | \
 sed 's/-[0-9].*//' | \
-sort -u > /tmp/package_names.txt
+sort -u > /tmp/current_packages_clean.txt
 
-total_packages=$(wc -l < /tmp/package_names.txt)
-echo -e "${GREEN}Found $total_packages unique packages${NC}"
+current_count=$(wc -l < /tmp/current_packages_clean.txt)
+echo -e "${GREEN}Found $current_count packages in current system${NC}"
 
-# Create output files
-> /tmp/likely_dependencies.txt
-> /tmp/explicit_packages.txt
-> /tmp/system_packages.txt
-> /tmp/application_packages.txt
+# Extract package names from clean install (remove version info)
+echo -e "${YELLOW}Processing clean install packages (OM_clean_packages.txt)...${NC}"
+grep -v '^[[:space:]]*$' OM_clean_packages.txt | \
+awk '{print $1}' | \
+sed 's/-[0-9].*//' | \
+sort -u > /tmp/clean_packages_clean.txt
 
-print_section "Analyzing Package Categories"
+clean_count=$(wc -l < /tmp/clean_packages_clean.txt)
+echo -e "${GREEN}Found $clean_count packages in clean install${NC}"
 
-# Read through each package and categorize
-while IFS= read -r package; do
-    [[ -z "$package" ]] && continue
-    
-    # Skip lib packages (likely dependencies)
-    if [[ "$package" =~ ^lib64 ]]; then
-        echo "$package" >> /tmp/likely_dependencies.txt
-        continue
-    fi
-    
-    # System/base packages (likely dependencies or base system)
-    if [[ "$package" =~ ^(basesystem|glibc|kernel|systemd|rpm|dnf|locales|setup|filesystem|rootfiles|distro-release) ]]; then
-        echo "$package" >> /tmp/system_packages.txt
-        continue
-    fi
-    
-    # Development packages (might be dependencies)
-    if [[ "$package" =~ (-devel|-dev|-headers|^perl-|^python-) ]]; then
-        echo "$package" >> /tmp/likely_dependencies.txt
-        continue
-    fi
-    
-    # Font packages (usually dependencies)
-    if [[ "$package" =~ (^fonts-|^font|^lib.*font) ]]; then
-        echo "$package" >> /tmp/likely_dependencies.txt
-        continue
-    fi
-    
-    # Qt/KDE framework libraries (dependencies)
-    if [[ "$package" =~ ^(kf6-|qt6-|lib.*qt|lib.*KF6) ]]; then
-        echo "$package" >> /tmp/likely_dependencies.txt
-        continue
-    fi
-    
-    # Plasma6 system components (might be meta-packages)
-    if [[ "$package" =~ ^plasma6- ]]; then
-        echo "$package" >> /tmp/application_packages.txt
-        continue
-    fi
-    
-    # Everything else is likely an explicit install
-    echo "$package" >> /tmp/explicit_packages.txt
-    
-done < /tmp/package_names.txt
+print_section "Comparing Package Lists"
+
+# Find packages that are only in the current system (not in clean install)
+comm -23 /tmp/current_packages_clean.txt /tmp/clean_packages_clean.txt > /tmp/custom_packages.txt
+
+# Find packages that are in both (will be removed)
+comm -12 /tmp/current_packages_clean.txt /tmp/clean_packages_clean.txt > /tmp/common_packages.txt
+
+custom_count=$(wc -l < /tmp/custom_packages.txt)
+common_count=$(wc -l < /tmp/common_packages.txt)
 
 # Display results
-print_section "Library Dependencies (likely auto-installed)"
-lib_count=$(wc -l < /tmp/likely_dependencies.txt 2>/dev/null || echo 0)
-echo -e "${YELLOW}Count: $lib_count${NC}"
-if [[ $lib_count -gt 0 ]]; then
-    head -10 /tmp/likely_dependencies.txt
-    if [[ $lib_count -gt 10 ]]; then
-        echo "... and $((lib_count - 10)) more"
+print_section "Packages from Clean Install (will be excluded)"
+echo -e "${YELLOW}Count: $common_count${NC}"
+if [[ $common_count -gt 0 ]]; then
+    echo -e "${CYAN}These packages are present in clean OMLx-ROME install:${NC}"
+    if [[ $common_count -le 20 ]]; then
+        cat /tmp/common_packages.txt
+    else
+        head -20 /tmp/common_packages.txt
+        echo "... and $((common_count - 20)) more"
     fi
 fi
 
-print_section "System/Base Packages (part of base system)"
-sys_count=$(wc -l < /tmp/system_packages.txt 2>/dev/null || echo 0)
-echo -e "${YELLOW}Count: $sys_count${NC}"
-if [[ $sys_count -gt 0 ]]; then
-    head -10 /tmp/system_packages.txt
-    if [[ $sys_count -gt 10 ]]; then
-        echo "... and $((sys_count - 10)) more"
-    fi
+print_section "Custom Packages (your installations)"
+echo -e "${GREEN}Count: $custom_count${NC}"
+if [[ $custom_count -gt 0 ]]; then
+    echo -e "${CYAN}These packages are only on your system:${NC}"
+    sort /tmp/custom_packages.txt
+else
+    echo -e "${YELLOW}No custom packages found!${NC}"
 fi
 
-print_section "Application Packages (explicit installs needed)"
-app_count=$(wc -l < /tmp/application_packages.txt 2>/dev/null || echo 0)
-echo -e "${GREEN}Count: $app_count${NC}"
-if [[ $app_count -gt 0 ]]; then
-    sort /tmp/application_packages.txt
-fi
-
-print_section "Other Explicit Packages (likely needed)"
-exp_count=$(wc -l < /tmp/explicit_packages.txt 2>/dev/null || echo 0)
-echo -e "${GREEN}Count: $exp_count${NC}"
-if [[ $exp_count -gt 0 ]]; then
-    sort /tmp/explicit_packages.txt
-fi
-
-# Create optimized package list
-print_section "Creating Optimized Package List"
+# Create custom package list
+print_section "Creating Custom Package List"
 {
-    echo "# OpenMandriva Package List - Optimized"
-    echo "# Generated by package analyzer on $(date)"
-    echo "# Only explicit packages that won't be auto-installed"
+    echo "# OpenMandriva Custom Package List"
+    echo "# Generated by package comparator on $(date)"
+    echo "# Contains only packages you installed yourself"
+    echo "# (Packages present in clean OMLx-ROME install have been excluded)"
     echo ""
-    echo "# === PLASMA DESKTOP COMPONENTS ==="
-    if [[ -s /tmp/application_packages.txt ]]; then
-        sort /tmp/application_packages.txt | grep -E "^plasma6-"
-    fi
+    echo "# Source files:"
+    echo "#   Current system: packages.txt"
+    echo "#   Clean install:  OM_clean_packages.txt"
     echo ""
-    echo "# === APPLICATIONS ==="
-    if [[ -s /tmp/explicit_packages.txt ]]; then
-        sort /tmp/explicit_packages.txt
+    if [[ -s /tmp/custom_packages.txt ]]; then
+        sort /tmp/custom_packages.txt
+    else
+        echo "# No custom packages found"
     fi
-    if [[ -s /tmp/application_packages.txt ]]; then
-        sort /tmp/application_packages.txt | grep -v -E "^plasma6-"
-    fi
-} > packages_optimized.txt
+} > packages_custom.txt
 
-print_header "Analysis Complete"
-echo -e "${GREEN}Optimized package list created: packages_optimized.txt${NC}"
-echo -e "${YELLOW}Original packages: $total_packages${NC}"
-echo -e "${YELLOW}Likely dependencies: $lib_count${NC}"
-echo -e "${YELLOW}System packages: $sys_count${NC}"
-echo -e "${YELLOW}Recommended explicit installs: $((app_count + exp_count))${NC}"
+print_header "Comparison Complete"
+echo -e "${GREEN}Custom package list created: packages_custom.txt${NC}"
+echo -e "${YELLOW}Current system packages: $current_count${NC}"
+echo -e "${YELLOW}Clean install packages: $clean_count${NC}"
+echo -e "${YELLOW}Common packages (excluded): $common_count${NC}"
+echo -e "${GREEN}Custom packages (your installs): $custom_count${NC}"
 
-echo -e "\n${CYAN}Reduction: $((lib_count + sys_count)) packages can likely be removed${NC}"
-echo -e "${CYAN}Space saving: ~$((((lib_count + sys_count) * 100) / total_packages))% reduction${NC}"
+if [[ $custom_count -gt 0 ]]; then
+    reduction_percent=$(( (common_count * 100) / current_count ))
+    echo -e "\n${CYAN}Reduction: $common_count packages excluded from install script${NC}"
+    echo -e "${CYAN}Space saving: ~${reduction_percent}% reduction in package list${NC}"
+else
+    echo -e "\n${YELLOW}All your packages are already in the clean install!${NC}"
+fi
 
 # Cleanup
-rm -f /tmp/package_names.txt /tmp/likely_dependencies.txt /tmp/explicit_packages.txt /tmp/system_packages.txt /tmp/application_packages.txt
+rm -f /tmp/current_packages_clean.txt /tmp/clean_packages_clean.txt /tmp/custom_packages.txt /tmp/common_packages.txt
 
-echo -e "\n${GREEN}Review packages_optimized.txt and test it before using!${NC}"
+echo -e "\n${GREEN}Review packages_custom.txt - these are the packages you need to install!${NC}"
