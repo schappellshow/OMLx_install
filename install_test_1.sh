@@ -68,6 +68,23 @@ sudo dnf install -y git wget curl || {
 
 print_success "Essential dependencies installed."
 
+# Install build tools and core dependencies needed for later installations
+print_status "Installing build tools and core dependencies..."
+sudo dnf install -y make cmake gcc gcc-c++ autoconf automake libtool \
+    python3-pip flatpak rust cargo stow || {
+    print_error "Failed to install build tools, continuing anyway..."
+}
+
+# Setup Flatpak if it was installed successfully
+if command -v flatpak >/dev/null 2>&1; then
+    print_status "Setting up Flatpak..."
+    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || {
+        print_error "Failed to add Flathub repository"
+    }
+fi
+
+print_success "Build tools and core dependencies installed."
+
 # Install native packages via dnf
 print_status "Installing native packages from $packages..."
 if [[ -s "$packages" ]]; then
@@ -132,7 +149,7 @@ print_status "Installing Python applications via pip..."
 
 # Install konsave for KDE settings management
 print_status "Installing konsave..."
-python -m pip install --user konsave || {
+python3 -m pip install --user konsave || {
     print_error "Failed to install konsave, continuing..."
 }
 
@@ -215,6 +232,12 @@ curl -L "$MAILSPRING_URL" -o "$MAILSPRING_FILE" || {
 
 # Install Mailspring if download was successful
 if [[ -n "$MAILSPRING_FILE" && -f "$MAILSPRING_FILE" ]]; then
+    # Install missing dependencies for Mailspring
+    print_status "Installing Mailspring dependencies..."
+    sudo dnf install -y libappindicator gtk3 || {
+        print_error "Failed to install Mailspring dependencies, continuing anyway..."
+    }
+    
     print_status "Installing Mailspring RPM..."
     sudo dnf install -y "$MAILSPRING_FILE" || {
         print_error "Failed to install Mailspring with dnf, trying rpm..."
@@ -244,6 +267,12 @@ curl -L "$PROTON_PASS_URL" -o "$PROTON_PASS_FILE" || {
 
 # Install Proton Pass if download was successful
 if [[ -n "$PROTON_PASS_FILE" && -f "$PROTON_PASS_FILE" ]]; then
+    # Install missing dependencies for Proton Pass
+    print_status "Installing Proton Pass dependencies..."
+    sudo dnf install -y libXtst gtk3 libdrm mesa-libgbm at-spi2-core || {
+        print_error "Failed to install Proton Pass dependencies, continuing anyway..."
+    }
+    
     print_status "Installing Proton Pass RPM..."
     sudo dnf install -y "$PROTON_PASS_FILE" || {
         print_error "Failed to install Proton Pass with dnf, trying rpm..."
