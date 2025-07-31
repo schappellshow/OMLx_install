@@ -1,0 +1,127 @@
+# OpenMandriva ROME Package List - Corrected
+# This file contains packages that are available in OpenMandriva repositories
+
+# Icons and Themes
+adwaita-icon-theme
+hicolor-icon-theme
+
+# Development Tools
+gcc
+gcc-c++
+autoconf
+automake
+libtool
+make
+cmake
+ninja
+git
+git-core
+
+# Text Processing and CLI Tools
+bat
+diffutils
+jq
+tree
+micro
+htop
+inxi
+
+# Build Dependencies
+binutils
+pkg-config
+gettext
+intltool
+
+# Graphics and Media
+gimp
+babl
+gegl
+graphviz
+imagemagick
+
+# Container and Virtualization
+podman
+buildah
+skopeo
+qemu
+virt-manager
+libvirt
+
+# Network Tools
+bridge-utils
+iproute2
+ipset
+iptables
+firewalld
+nftables
+
+# System Libraries and Development
+glibc-devel
+kernel-headers
+gtest
+lcov
+
+# Qt/KDE Development
+qt6-qtbase-devel
+qt6-qttools
+kf6-kwindowsystem
+plasma6-kwin
+plasma6-breeze
+
+# Terminal Emulators
+kitty
+ghostty
+
+# File Management and Utilities
+fzf
+lsd
+screen
+stow
+pass
+
+# Archive and Compression
+unzip
+zip
+tar
+gzip
+bzip2
+
+# Audio/Video
+vlc
+strawberry
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-bad
+gstreamer1.0-plugins-ugly
+
+# Fonts
+fonts-ttf-dejavu
+fonts-ttf-liberation
+fonts-ttf-hack
+fonts-ttf-noto-emoji
+
+# Python Development
+python
+python-pip
+python-setuptools
+python-wheel
+
+# Rust Development
+rust
+cargo
+
+# Text Editors
+neovim
+vim
+micro
+
+# System Monitoring
+radeontop
+clinfo
+glxinfo
+
+# Additional Development Libraries
+gtk3-devel
+gtk4-devel
+cairo-devel
+pango-devel
+glib2-devel

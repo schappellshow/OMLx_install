@@ -71,7 +71,7 @@ print_success "Essential dependencies installed."
 # Install build tools and core dependencies needed for later installations
 print_status "Installing build tools and core dependencies..."
 sudo dnf install -y make cmake gcc gcc-c++ autoconf automake libtool \
-    python3-pip flatpak rust cargo stow || {
+    python-pip flatpak rust cargo stow || {
     print_error "Failed to install build tools, continuing anyway..."
 }
 
@@ -117,7 +117,7 @@ if [[ -s "$flatpaks" ]]; then
         # Extract just the app ID (before any version info)
         app_id=$(echo "$flatpak" | awk '{print $1}')
         print_status "Installing Flatpak: $app_id"
-        flatpak install -y --user "$app_id" || {
+        flatpak install "$app_id" || {
             print_error "Failed to install $app_id, continuing..."
         }
     done < "$flatpaks"
