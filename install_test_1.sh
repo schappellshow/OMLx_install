@@ -327,7 +327,7 @@ print_status "Installing Git-based projects..."
 
 # Install conky-manager2
 print_status "Installing conky-manager2..."
-CONKY_MANAGER_DIR="/tmp/conky-manager2"
+CONKY_MANAGER_DIR="/home/mike/conky-manager2/"
 
 # Clone and build conky-manager2
 print_status "Cloning conky-manager2 repository..."
@@ -353,7 +353,6 @@ if [[ -n "$CONKY_MANAGER_DIR" && -d "$CONKY_MANAGER_DIR" ]]; then
     
     # Return to original directory and cleanup
     cd - > /dev/null
-    rm -rf "$CONKY_MANAGER_DIR"
     print_success "Conky-manager2 installation completed"
 else
     print_error "Conky-manager2 installation skipped"
@@ -361,7 +360,7 @@ fi
 
 # Install espanso
 print_status "Installing espanso..."
-ESPANSO_DIR="/tmp/espanso"
+ESPANSO_DIR="/home/mike/espanso/"
 
 # Clone and build espanso
 print_status "Cloning espanso repository..."
@@ -407,7 +406,6 @@ if [[ -n "$ESPANSO_DIR" && -d "$ESPANSO_DIR" ]]; then
     
     # Return to original directory and cleanup
     cd - > /dev/null
-    rm -rf "$ESPANSO_DIR"
 else
     print_error "Espanso installation skipped"
 fi
@@ -416,8 +414,8 @@ fi
 print_status "Installing kwin-forceblur plugin..."
 FORCEBLUR_VERSION="1.3.6"
 FORCEBLUR_URL="https://github.com/taj-ny/kwin-effects-forceblur/archive/refs/tags/v${FORCEBLUR_VERSION}.tar.gz"
-FORCEBLUR_DIR="/tmp/kwin-effects-forceblur-${FORCEBLUR_VERSION}"
-FORCEBLUR_ARCHIVE="/tmp/kwin-forceblur-v${FORCEBLUR_VERSION}.tar.gz"
+FORCEBLUR_DIR="/home/mike/kwin-effects-forceblur-${FORCEBLUR_VERSION}"
+FORCEBLUR_ARCHIVE="/home/mike/kwin-forceblur-v${FORCEBLUR_VERSION}.tar.gz"
 
 # Download and extract kwin-forceblur
 print_status "Downloading kwin-forceblur v${FORCEBLUR_VERSION}..."
@@ -515,8 +513,6 @@ if [[ -n "$FORCEBLUR_ARCHIVE" && -f "$FORCEBLUR_ARCHIVE" ]]; then
         cd - > /dev/null
     fi
     
-    # Cleanup
-    rm -rf "$FORCEBLUR_DIR" "$FORCEBLUR_ARCHIVE"
 else
     print_error "Kwin-forceblur installation skipped"
 fi
