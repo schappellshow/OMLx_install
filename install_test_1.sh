@@ -117,7 +117,7 @@ if [[ -s "$flatpaks" ]]; then
         # Extract just the app ID (before any version info)
         app_id=$(echo "$flatpak" | awk '{print $1}')
         print_status "Installing Flatpak: $app_id"
-        flatpak install "$app_id" || {
+        flatpak install "$app_id" -y || {
             print_error "Failed to install $app_id, continuing..."
         }
     done < "$flatpaks"
@@ -161,7 +161,7 @@ if [[ -f "$HOME/ROME.knsv" ]]; then
     }
     
     print_status "Applying konsave profile..."
-    konsave -a "$HOME/ROME.knsv" || {
+    konsave -a ROME || {
         print_error "Failed to apply konsave profile, continuing..."
     }
     
