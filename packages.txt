@@ -55,8 +55,6 @@ git.x86_64
 gjs.x86_64
 glibc-devel.x86_64
 glib-gettextize.x86_64
-gnome-terminal-nautilus.x86_64
-gnome-terminal.x86_64
 gnuplot-nox.x86_64
 gnuplot.x86_64
 graphviz.x86_64
@@ -176,7 +174,6 @@ lib64gjs-gir1.0.x86_64
 lib64GLESv1_CM1.x86_64
 lib64glib2.0-devel.x86_64
 lib64glvnd-devel.x86_64
-lib64gnome-desktop3_20.x86_64
 lib64gpm2.x86_64
 lib64gpod4.x86_64
 lib64graphene-gir1.0.x86_64
@@ -617,7 +614,6 @@ vulkan-headers.noarch
 warp-terminal.x86_64
 webkit4.1.x86_64
 webkit-common.x86_64
-wl-clipboard.x86_64
 wxwidgets.x86_64
 x11-proto-devel.noarch
 x11-server.x86_64
