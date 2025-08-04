@@ -490,20 +490,40 @@ clone_and_build() {
 
 # Install conky-manager2
 print_status "Installing conky-manager2..."
-CONKY_MANAGER_DIR="$HOME/conky-manager2"
 
-# Clone and build conky-manager2
-clone_and_build \
-    "https://github.com/zcot/conky-manager2.git" \
-    "conky-manager2" \
-    "$CONKY_MANAGER_DIR" \
-    "make && sudo make install" || {
-    print_error "Conky-manager2 installation failed, continuing..."
-}
+# Try to install from OpenMandriva repositories first
+if sudo dnf install -y conky-manager2.x86_64; then
+    print_success "Conky-manager2 installed successfully from repositories"
+else
+    print_warning "Conky-manager2 not available in repositories, trying to build from source..."
+    
+    CONKY_MANAGER_DIR="$HOME/conky-manager2"
+    
+    # Install build dependencies first
+    print_status "Installing conky-manager2 build dependencies..."
+    sudo dnf install -y conky.x86_64 lib64gtk+3.0-devel.x86_64 lib64glib2.0-devel.x86_64 pkgconf.x86_64 make.x86_64 gcc.x86_64 || {
+        print_warning "Some build dependencies failed to install"
+    }
+    
+    # Clone and build conky-manager2
+    clone_and_build \
+        "https://github.com/zcot/conky-manager2.git" \
+        "conky-manager2" \
+        "$CONKY_MANAGER_DIR" \
+        "make && sudo make install" || {
+        print_error "Conky-manager2 installation failed, continuing..."
+    }
+fi
 
 # Install espanso
 print_status "Installing espanso..."
 ESPANSO_DIR="$HOME/espanso"
+
+# Install X11 development dependencies for espanso
+print_status "Installing espanso X11 dependencies..."
+sudo dnf install -y lib64x11-devel.x86_64 lib64xkbcommon-devel.x86_64 lib64xrandr-devel.x86_64 || {
+    print_warning "Some X11 dependencies failed to install"
+}
 
 # Clone and build espanso
 clone_and_build \
@@ -555,7 +575,7 @@ if curl -L "$FORCEBLUR_URL" -o "$FORCEBLUR_ARCHIVE"; then
     
     if tar -xzf "$FORCEBLUR_ARCHIVE"; then
         # Find the extracted directory
-        local extracted_dir=$(find /tmp -maxdepth 1 -name "kwin-effects-forceblur-*" -type d | head -1)
+        extracted_dir=$(find /tmp -maxdepth 1 -name "kwin-effects-forceblur-*" -type d | head -1)
         
         if [[ -n "$extracted_dir" && -d "$extracted_dir" ]]; then
             print_status "Building kwin-forceblur..."

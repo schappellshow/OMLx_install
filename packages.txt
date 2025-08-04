@@ -770,6 +770,11 @@ binutils.x86_64
 glibc-devel.x86_64
 lib64stdc++-devel.x86_64
 
+# X11 development dependencies for cargo applications (espanso, etc.)
+lib64x11-devel.x86_64
+lib64xkbcommon-devel.x86_64
+lib64xrandr-devel.x86_64
+
 # =============================================================================
 # MAILSPRING DEPENDENCIES
 # =============================================================================
@@ -788,4 +793,14 @@ lib64gtk3_0.x86_64
 
 # Zsh shell for Oh My Zsh
 zsh.x86_64
+
+# =============================================================================
+# SYSTEM MONITORING TOOLS
+# =============================================================================
+# These packages are required for system monitoring and conky
+# Add new system monitoring dependencies here if needed
+
+# Conky and conky manager
+conky.x86_64
+conky-manager2.x86_64
 
