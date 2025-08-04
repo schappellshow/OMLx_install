@@ -163,6 +163,7 @@ for app in "${cargo_apps[@]}"; do
             print_success "$app installed successfully with verbose mode"
         else
             print_error "Failed to install $app with all methods"
+            print_warning "Continuing with remaining cargo applications..."
         fi
     fi
 done
@@ -322,6 +323,7 @@ if [[ "$WARP_DOWNLOADED" == true ]]; then
     rm -f "$WARP_RPM_FILE"
 else
     print_error "Failed to download Warp terminal from all sources"
+    print_warning "Continuing with remaining installations..."
 fi
 
 # Install Mailspring
@@ -330,17 +332,30 @@ MAILSPRING_FILE="/tmp/mailspring.rpm"
 
 print_status "Downloading Mailspring RPM..."
 if curl -L "https://updates.getmailspring.com/download?platform=linuxRpm" -o "$MAILSPRING_FILE" && validate_download "$MAILSPRING_FILE" 1000000; then
-    # Install dependencies first
+    # Install dependencies first (ensuring they're available)
     print_status "Installing Mailspring dependencies..."
-    sudo dnf install -y libappindicator gtk3 || {
-        print_warning "Some Mailspring dependencies failed to install"
+    sudo dnf install -y lib64appindicator lib64gtk3_0 || {
+        print_warning "Some Mailspring dependencies failed to install, continuing with --nodeps"
     }
     
-    install_rpm_with_updates "$MAILSPRING_FILE" "Mailspring"
-    verify_repository_integration "mailspring"
+    # Try DNF first, then RPM with --nodeps as fallback
+    print_status "Installing Mailspring with dependency handling..."
+    if sudo dnf install -y "$MAILSPRING_FILE"; then
+        print_success "Mailspring installed successfully with DNF"
+        verify_repository_integration "mailspring"
+    elif sudo rpm -ivh --nodeps "$MAILSPRING_FILE"; then
+        print_success "Mailspring installed successfully with RPM (--nodeps)"
+        print_warning "Mailspring installed without dependency checking - ensure libappindicator and gtk3 are installed"
+        verify_repository_integration "mailspring"
+    else
+        print_error "Failed to install Mailspring with both DNF and RPM methods"
+        print_warning "Continuing with remaining installations..."
+    fi
+    
     rm -f "$MAILSPRING_FILE"
 else
     print_error "Failed to download Mailspring"
+    print_warning "Continuing with remaining installations..."
 fi
 
 # Install Proton Pass
@@ -361,11 +376,13 @@ if curl -L "https://proton.me/download/PassDesktop/linux/x64/ProtonPass.rpm" -o 
         print_warning "You may need to install missing dependencies manually"
     else
         print_error "Failed to install Proton Pass"
+        print_warning "Continuing with remaining installations..."
     fi
     
     rm -f "$PROTON_PASS_FILE"
 else
     print_error "Failed to download Proton Pass"
+    print_warning "Continuing with remaining installations..."
 fi
 
 # Install PDF Studio Viewer (shell script installer)
@@ -387,12 +404,14 @@ if curl -L "https://download.qoppa.com/pdfstudioviewer/PDFStudioViewer_linux64.s
             print_success "PDF Studio Viewer installed successfully in interactive mode"
         else
             print_error "Failed to install PDF Studio Viewer"
+            print_warning "Continuing with remaining installations..."
         fi
     fi
     
     rm -f "$PDF_STUDIO_FILE"
 else
     print_error "Failed to download PDF Studio Viewer"
+    print_warning "Continuing with remaining installations..."
 fi
 
 print_success "Individual RPM packages installation completed"
@@ -631,6 +650,52 @@ else
 fi
 
 print_success "Git-based projects installation completed"
+
+# Install Oh My Zsh
+print_status "Installing Oh My Zsh..."
+
+# Check if zsh is installed
+if ! command -v zsh >/dev/null 2>&1; then
+    print_status "Installing zsh..."
+    sudo dnf install -y zsh || {
+        print_error "Failed to install zsh, skipping Oh My Zsh installation"
+    }
+fi
+
+# Install Oh My Zsh if zsh is available
+if command -v zsh >/dev/null 2>&1; then
+    print_status "Installing Oh My Zsh..."
+    
+    # Backup existing .zshrc if it exists
+    if [[ -f "$HOME/.zshrc" ]]; then
+        print_status "Backing up existing .zshrc..."
+        cp "$HOME/.zshrc" "$HOME/.zshrc.backup.$(date +%Y%m%d_%H%M%S)" || {
+            print_warning "Failed to backup existing .zshrc"
+        }
+    fi
+    
+    # Install Oh My Zsh
+    if sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended; then
+        print_success "Oh My Zsh installed successfully"
+        
+        # Set zsh as default shell if not already set
+        if [[ "$SHELL" != "/bin/zsh" ]]; then
+            print_status "Setting zsh as default shell..."
+            if chsh -s /bin/zsh; then
+                print_success "Zsh set as default shell"
+                print_warning "You may need to log out and log back in for the change to take effect"
+            else
+                print_warning "Failed to set zsh as default shell, you can do this manually later"
+            fi
+        else
+            print_success "Zsh is already the default shell"
+        fi
+    else
+        print_error "Failed to install Oh My Zsh, continuing..."
+    fi
+else
+    print_error "Zsh is not available, skipping Oh My Zsh installation"
+fi
 
 # Setup Dotfiles
 print_status "Setting up dotfiles..."

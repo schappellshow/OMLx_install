@@ -773,3 +773,22 @@ binutils.x86_64
 glibc-devel.x86_64
 lib64stdc++-devel.x86_64
 
+# =============================================================================
+# MAILSPRING DEPENDENCIES
+# =============================================================================
+# These packages are required for Mailspring RPM installation
+# Add new Mailspring dependencies here if needed
+
+# Core Mailspring dependencies (verified for OpenMandriva)
+lib64appindicator.x86_64
+lib64gtk3_0.x86_64
+
+# =============================================================================
+# SHELL ENHANCEMENTS
+# =============================================================================
+# These packages are required for shell enhancements
+# Add new shell enhancement dependencies here if needed
+
+# Zsh shell for Oh My Zsh
+zsh.x86_64
+
