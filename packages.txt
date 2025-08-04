@@ -165,7 +165,6 @@ diffutils.x86_64
 dmg2img.x86_64
 dnsmasq-base.x86_64
 docker-compose.x86_64
-docker-desktop.x86_64
 docker.x86_64
 extra-cmake-modules.noarch
 firewalld.noarch
@@ -618,7 +617,6 @@ luajit-mpack.x86_64
 luajit.x86_64
 lua.x86_64
 m4.x86_64
-mailspring.x86_64
 make.x86_64
 micro.x86_64
 nbd.x86_64
@@ -742,7 +740,6 @@ vlc.x86_64
 vte3-profile.noarch
 vte3.x86_64
 vulkan-headers.noarch
-warp-terminal.x86_64
 webkit4.1.x86_64
 webkit-common.x86_64
 wxwidgets.x86_64
