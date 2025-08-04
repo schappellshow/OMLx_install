@@ -1,0 +1,89 @@
+# Critical missing dependencies for cargo applications
+# These are the most important packages needed for building Rust applications
+
+# Core build tools
+pkg-config
+openssl-devel
+zlib-devel
+libz-devel
+
+# C/C++ development
+libclang-devel
+clang-devel
+python3-devel
+
+# Core libraries
+libffi-devel
+libxml2-devel
+libcurl-devel
+libsqlite3-devel
+libpcre-devel
+pcre-devel
+
+# Image processing (for resvg)
+libjpeg-devel
+jpeg-devel
+libpng-devel
+png-devel
+libtiff-devel
+libwebp-devel
+libavif-devel
+libgif-devel
+gif-devel
+
+# Graphics libraries (for resvg, yazi)
+libfreetype-devel
+freetype-devel
+libfontconfig-devel
+libharfbuzz-devel
+libcairo-devel
+cairo-devel
+libpango-devel
+libgdk-pixbuf-devel
+gdk-pixbuf-devel
+
+# GUI libraries (for yazi)
+libgtk-devel
+gtk-devel
+libglib-devel
+glib-devel
+libatk-devel
+atk-devel
+libgdk-devel
+gdk-devel
+
+# X11 development libraries (for yazi)
+libx11-devel
+x11-devel
+libxcb-devel
+xcb-devel
+libxrandr-devel
+xrandr-devel
+libxinerama-devel
+xinerama-devel
+libxcursor-devel
+xcursor-devel
+libxfixes-devel
+xfixes-devel
+libxrender-devel
+xrender-devel
+libxext-devel
+xext-devel
+libxcomposite-devel
+xcomposite-devel
+libxdamage-devel
+xdamage-devel
+libxtst-devel
+xtst-devel
+libxi-devel
+xi-devel
+libxss-devel
+xss-devel
+libxkbcommon-devel
+xkbcommon-devel
+
+# Additional libraries
+libyaml-devel
+yaml-devel
+libonig-devel
+oniguruma-devel 

@@ -7,6 +7,137 @@
 #   Current system: packages.txt
 #   Clean install:  OM_clean_packages.txt
 
+# =============================================================================
+# CARGO BUILD DEPENDENCIES
+# =============================================================================
+# These packages are required for building Rust applications with cargo
+# Add new cargo dependencies here when adding new Rust applications
+
+# Core build tools
+pkgconf.x86_64
+lib64openssl-devel.x86_64
+lib64z-devel.x86_64
+
+# C/C++ development
+lib64clang-devel.x86_64
+lib64python3.11_1.x86_64
+
+# Core libraries
+lib64ffi-devel.x86_64
+lib64xml2-devel.x86_64
+lib64curl-devel.x86_64
+lib64sqlite3-devel.x86_64
+lib64pcre-devel.x86_64
+
+# Image processing (for resvg)
+lib64jpeg-devel.x86_64
+lib64png-devel.x86_64
+lib64tiff-devel.x86_64
+lib64webp-devel.x86_64
+lib64avif-devel.x86_64
+lib64gif-devel.x86_64
+
+# Graphics libraries (for resvg, yazi)
+lib64freetype6-devel.x86_64
+lib64fontconfig-devel.x86_64
+lib64harfbuzz-devel.x86_64
+lib64cairo-devel.x86_64
+lib64pango1.0-devel.x86_64
+lib64gdk_pixbuf2.0-devel.x86_64
+
+# GUI libraries (for yazi)
+lib64gtk+3.0-devel.x86_64
+lib64glib2.0-devel.x86_64
+lib64atspi-devel.x86_64
+lib64gdk3_0.x86_64
+lib64gdk-x11_2.0_0.x86_64
+
+# X11 development (for GUI applications)
+lib64x11-devel.x86_64
+lib64xcb-devel.x86_64
+lib64xrandr-devel.x86_64
+lib64xinerama-devel.x86_64
+lib64xcursor-devel.x86_64
+lib64xfixes-devel.x86_64
+lib64xrender-devel.x86_64
+lib64xext-devel.x86_64
+
+# Additional libraries
+lib64uuid-devel.x86_64
+lib64lzma-devel.x86_64
+lib64bz2-devel.x86_64
+lib64crypt-devel.x86_64
+lib64mount-devel.x86_64
+lib64seccomp-devel.x86_64
+lib64systemd-devel.x86_64
+
+# =============================================================================
+# PROTON PASS DEPENDENCIES
+# =============================================================================
+# These packages are required for Proton Pass RPM installation
+# Add new Proton Pass dependencies here if needed
+
+# Core Proton Pass dependencies (verified for OpenMandriva)
+libxtst6.x86_64
+lib64gtk3_0.x86_64
+libdrm-devel.x86_64
+libgbm-devel.x86_64
+at-spi2-core.x86_64
+
+# X11 development libraries (for Proton Pass GUI) - corrected names
+lib64x11-devel.x86_64
+lib64xcb-devel.x86_64
+lib64xrandr-devel.x86_64
+lib64xinerama-devel.x86_64
+lib64xcursor-devel.x86_64
+lib64xfixes-devel.x86_64
+lib64xrender-devel.x86_64
+lib64xext-devel.x86_64
+lib64xcomposite-devel.x86_64
+lib64xdamage-devel.x86_64
+lib64xtst-devel.x86_64
+lib64xi-devel.x86_64
+lib64xkbcommon-devel.x86_64
+
+# GUI libraries (for Proton Pass) - corrected names
+lib64gtk+3.0-devel.x86_64
+lib64glib2.0-devel.x86_64
+lib64atspi-devel.x86_64
+lib64gdk3_0.x86_64
+lib64gdk-x11_2.0_0.x86_64
+lib64cairo-devel.x86_64
+lib64pango1.0-devel.x86_64
+lib64gdk_pixbuf2.0-devel.x86_64
+lib64freetype6-devel.x86_64
+lib64fontconfig-devel.x86_64
+lib64harfbuzz-devel.x86_64
+
+# Additional Proton Pass dependencies - corrected names
+lib64openssl-devel.x86_64
+lib64z-devel.x86_64
+lib64ffi-devel.x86_64
+lib64xml2-devel.x86_64
+lib64curl-devel.x86_64
+lib64sqlite3-devel.x86_64
+lib64pcre-devel.x86_64
+lib64jpeg-devel.x86_64
+lib64png-devel.x86_64
+lib64tiff-devel.x86_64
+lib64webp-devel.x86_64
+lib64avif-devel.x86_64
+lib64gif-devel.x86_64
+lib64uuid-devel.x86_64
+lib64lzma-devel.x86_64
+lib64bz2-devel.x86_64
+lib64crypt-devel.x86_64
+lib64mount-devel.x86_64
+lib64seccomp-devel.x86_64
+lib64systemd-devel.x86_64
+
+# =============================================================================
+# USER INSTALLED PACKAGES
+# =============================================================================
+
 adwaita-icon-theme.noarch
 appstream-glib-i18n.noarch
 augeas-lenses.x86_64

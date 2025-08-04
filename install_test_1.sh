@@ -2,8 +2,8 @@
 
 # This is an install script for OpenMandriva LX ROME. This should also work for ROCK 6.0.
 # Created by: Mike Schappell
-# Created: July 2025
-# Version 1.1
+# Created: July 2025 | Edited: Aug 2025
+# Version 1.2
 #
 # Exit on any error
 set -e
@@ -21,11 +21,15 @@ print_success() {
     echo -e "\033[1;32m[SUCCESS]\033[0m $1"
 }
 
+print_warning() {
+    echo -e "\033[1;33m[WARNING]\033[0m $1"
+}
+
 # Variables
 config="$HOME/.config"
 dotfiles="https://github.com/schappellshow/stow.git"
 packages="./packages.txt"
-flatpaks="./flatpak.txt"  # Fixed filename to match your actual file
+flatpaks="./flatpak.txt"
 stow_dir="$HOME/stow"
 
 print_status "Starting OpenMandriva installation script..."
@@ -137,9 +141,30 @@ cargo_apps=("cargo-make" "cargo-update" "fd-find" "resvg" "ripgrep" "rust-script
 # Install cargo applications one by one for better error handling
 for app in "${cargo_apps[@]}"; do
     print_status "Installing cargo app: $app"
-    cargo install --locked "$app" || {
-        print_error "Failed to install $app, continuing with other applications..."
-    }
+    
+    # Try installation with detailed error reporting
+    if cargo install --locked "$app" 2>&1 | tee "/tmp/cargo_${app}_install.log"; then
+        print_success "$app installed successfully"
+    else
+        print_warning "$app installation failed, checking for dependency issues..."
+        
+        # Check for common issues
+        if grep -q "linking" "/tmp/cargo_${app}_install.log"; then
+            print_warning "$app has linking issues - may need additional development libraries"
+        fi
+        
+        if grep -q "not found" "/tmp/cargo_${app}_install.log"; then
+            print_warning "$app has missing library issues - may need additional packages"
+        fi
+        
+        # Try alternative installation method
+        print_status "Trying alternative installation method for $app..."
+        if cargo install --locked --verbose "$app" 2>&1 | tee "/tmp/cargo_${app}_verbose.log"; then
+            print_success "$app installed successfully with verbose mode"
+        else
+            print_error "Failed to install $app with all methods"
+        fi
+    fi
 done
 
 print_success "Cargo applications installation completed"
@@ -183,141 +208,191 @@ print_success "Zoxide installation completed"
 # Install individual RPM packages
 print_status "Installing individual RPM packages..."
 
-# Install Warp terminal
-print_status "Installing Warp terminal..."
-WARP_RPM_URL="https://releases.warp.dev/linux/v0.2024.10.29.08.02.stable_02/warp-terminal-v0.2024.10.29.08.02.stable_02-1-x86_64.rpm"
-WARP_RPM_FILE="/tmp/warp-terminal.rpm"
-
-# Download Warp RPM
-print_status "Downloading Warp terminal RPM..."
-curl -L "$WARP_RPM_URL" -o "$WARP_RPM_FILE" || {
-    print_error "Failed to download Warp terminal, trying alternative method..."
+# Function to validate downloaded file
+validate_download() {
+    local file="$1"
+    local min_size="$2"
     
-    # Alternative: Try to get latest from their API or use a known stable URL
-    print_status "Trying alternative download method..."
-    curl -L "https://app.warp.dev/download?package=rpm" -o "$WARP_RPM_FILE" || {
-        print_error "Failed to download Warp terminal, skipping installation"
-        WARP_RPM_FILE=""
-    }
+    if [[ ! -f "$file" ]]; then
+        return 1
+    fi
+    
+    local size=$(stat -c%s "$file" 2>/dev/null || echo "0")
+    if [[ $size -lt $min_size ]]; then
+        print_error "Downloaded file is too small ($size bytes), likely an error page"
+        return 1
+    fi
+    
+    return 0
 }
 
-# Install Warp if download was successful
-if [[ -n "$WARP_RPM_FILE" && -f "$WARP_RPM_FILE" ]]; then
-    print_status "Installing Warp terminal RPM..."
-    sudo dnf install -y "$WARP_RPM_FILE" || {
-        print_error "Failed to install Warp terminal with dnf, trying rpm..."
-        sudo rpm -ivh "$WARP_RPM_FILE" || {
-            print_error "Failed to install Warp terminal, continuing..."
-        }
-    }
+# Function to install RPM with update support
+install_rpm_with_updates() {
+    local rpm_file="$1"
+    local app_name="$2"
     
-    # Clean up downloaded file
-    rm -f "$WARP_RPM_FILE"
-    print_success "Warp terminal installation completed"
+    print_status "Installing $app_name with update support..."
+    
+    # Validate RPM file
+    if ! validate_download "$rpm_file" 1000000; then
+        print_error "Invalid RPM file for $app_name"
+        return 1
+    fi
+    
+    # Try DNF first (enables automatic updates)
+    if sudo dnf install -y "$rpm_file"; then
+        print_success "$app_name installed successfully with DNF (updates enabled)"
+        
+        # Check if repository was added
+        if sudo dnf repolist | grep -q -i "$app_name"; then
+            print_success "Repository added for $app_name updates"
+        fi
+        
+        # Check if package is updateable
+        if dnf check-update | grep -q -i "$app_name"; then
+            print_success "$app_name will receive system updates"
+        fi
+        
+        return 0
+    else
+        print_warning "DNF installation failed, trying RPM..."
+        if sudo rpm -ivh "$rpm_file"; then
+            print_success "$app_name installed with RPM (manual updates required)"
+            print_warning "You may need to manually update $app_name in the future"
+            return 0
+        else
+            print_error "Failed to install $app_name with both DNF and RPM"
+            return 1
+        fi
+    fi
+}
+
+# Function to verify repository integration
+verify_repository_integration() {
+    local app_name="$1"
+    
+    print_status "Verifying repository integration for $app_name..."
+    
+    # Check if repository was added
+    if sudo dnf repolist | grep -i "$app_name"; then
+        print_success "Repository found for $app_name"
+    else
+        print_warning "No repository found for $app_name - manual updates may be required"
+    fi
+    
+    # Check if package is updateable
+    if dnf check-update | grep -i "$app_name"; then
+        print_success "$app_name is updateable through system updates"
+    else
+        print_warning "$app_name may require manual updates"
+    fi
+}
+
+# Install Warp terminal
+print_status "Installing Warp terminal..."
+WARP_RPM_FILE="/tmp/warp-terminal.rpm"
+
+# Try multiple download methods for Warp
+print_status "Downloading Warp terminal RPM..."
+WARP_DOWNLOADED=false
+
+# Method 1: Official download API
+print_status "Trying official Warp download API..."
+if curl -L "https://app.warp.dev/download?package=rpm" -o "$WARP_RPM_FILE" && validate_download "$WARP_RPM_FILE" 1000000; then
+    WARP_DOWNLOADED=true
+    print_success "Warp downloaded successfully via API"
 else
-    print_error "Warp terminal installation skipped due to download failure"
+    print_warning "Official API failed, trying alternative method..."
+    
+    # Method 2: Try to get latest release from GitHub
+    print_status "Trying GitHub releases..."
+    LATEST_WARP=$(curl -s "https://api.github.com/repos/warpdotdev/Warp/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4)
+    if [[ -n "$LATEST_WARP" ]]; then
+        WARP_GITHUB_URL="https://github.com/warpdotdev/Warp/releases/download/${LATEST_WARP}/warp-terminal-${LATEST_WARP}-1-x86_64.rpm"
+        if curl -L "$WARP_GITHUB_URL" -o "$WARP_RPM_FILE" && validate_download "$WARP_RPM_FILE" 1000000; then
+            WARP_DOWNLOADED=true
+            print_success "Warp downloaded successfully from GitHub"
+        fi
+    fi
+fi
+
+if [[ "$WARP_DOWNLOADED" == true ]]; then
+    install_rpm_with_updates "$WARP_RPM_FILE" "Warp Terminal"
+    verify_repository_integration "warp"
+    rm -f "$WARP_RPM_FILE"
+else
+    print_error "Failed to download Warp terminal from all sources"
 fi
 
 # Install Mailspring
 print_status "Installing Mailspring..."
-MAILSPRING_URL="https://updates.getmailspring.com/download?platform=linuxRpm"
 MAILSPRING_FILE="/tmp/mailspring.rpm"
 
-# Download Mailspring RPM
 print_status "Downloading Mailspring RPM..."
-curl -L "$MAILSPRING_URL" -o "$MAILSPRING_FILE" || {
-    print_error "Failed to download Mailspring, skipping installation"
-    MAILSPRING_FILE=""
-}
-
-# Install Mailspring if download was successful
-if [[ -n "$MAILSPRING_FILE" && -f "$MAILSPRING_FILE" ]]; then
-    # Install missing dependencies for Mailspring
+if curl -L "https://updates.getmailspring.com/download?platform=linuxRpm" -o "$MAILSPRING_FILE" && validate_download "$MAILSPRING_FILE" 1000000; then
+    # Install dependencies first
     print_status "Installing Mailspring dependencies..."
     sudo dnf install -y libappindicator gtk3 || {
-        print_error "Failed to install Mailspring dependencies, continuing anyway..."
+        print_warning "Some Mailspring dependencies failed to install"
     }
     
-    print_status "Installing Mailspring RPM..."
-    sudo dnf install -y "$MAILSPRING_FILE" || {
-        print_error "Failed to install Mailspring with dnf, trying rpm..."
-        sudo rpm -ivh "$MAILSPRING_FILE" || {
-            print_error "Failed to install Mailspring, continuing..."
-        }
-    }
-    
-    # Clean up downloaded file
+    install_rpm_with_updates "$MAILSPRING_FILE" "Mailspring"
+    verify_repository_integration "mailspring"
     rm -f "$MAILSPRING_FILE"
-    print_success "Mailspring installation completed"
 else
-    print_error "Mailspring installation skipped due to download failure"
+    print_error "Failed to download Mailspring"
 fi
 
 # Install Proton Pass
 print_status "Installing Proton Pass..."
-PROTON_PASS_URL="https://proton.me/download/PassDesktop/linux/x64/ProtonPass.rpm"
 PROTON_PASS_FILE="/tmp/proton-pass.rpm"
 
-# Download Proton Pass RPM
 print_status "Downloading Proton Pass RPM..."
-curl -L "$PROTON_PASS_URL" -o "$PROTON_PASS_FILE" || {
-    print_error "Failed to download Proton Pass, skipping installation"
-    PROTON_PASS_FILE=""
-}
-
-# Install Proton Pass if download was successful
-if [[ -n "$PROTON_PASS_FILE" && -f "$PROTON_PASS_FILE" ]]; then
-    # Install missing dependencies for Proton Pass
-    print_status "Installing Proton Pass dependencies..."
-    sudo dnf install -y libXtst gtk3 libdrm mesa-libgbm at-spi2-core || {
-        print_error "Failed to install Proton Pass dependencies, continuing anyway..."
-    }
+if curl -L "https://proton.me/download/PassDesktop/linux/x64/ProtonPass.rpm" -o "$PROTON_PASS_FILE" && validate_download "$PROTON_PASS_FILE" 1000000; then
+    # Proton Pass dependencies are now handled by packages.txt installation
+    print_status "Installing Proton Pass..."
     
-    print_status "Installing Proton Pass RPM..."
-    sudo dnf install -y "$PROTON_PASS_FILE" || {
-        print_error "Failed to install Proton Pass with dnf, trying rpm..."
-        sudo rpm -ivh "$PROTON_PASS_FILE" || {
-            print_error "Failed to install Proton Pass, continuing..."
-        }
-    }
+    # Try multiple installation methods
+    if sudo dnf install -y "$PROTON_PASS_FILE"; then
+        print_success "Proton Pass installed successfully with DNF"
+        verify_repository_integration "proton"
+    elif sudo rpm -ivh --nodeps "$PROTON_PASS_FILE"; then
+        print_success "Proton Pass installed with RPM (dependencies may need manual installation)"
+        print_warning "You may need to install missing dependencies manually"
+    else
+        print_error "Failed to install Proton Pass"
+    fi
     
-    # Clean up downloaded file
     rm -f "$PROTON_PASS_FILE"
-    print_success "Proton Pass installation completed"
 else
-    print_error "Proton Pass installation skipped due to download failure"
+    print_error "Failed to download Proton Pass"
 fi
 
-# Install PDF Studio Viewer
+# Install PDF Studio Viewer (shell script installer)
 print_status "Installing PDF Studio Viewer..."
-PDF_STUDIO_URL="https://download.qoppa.com/pdfstudioviewer/PDFStudioViewer_linux64.sh"
 PDF_STUDIO_FILE="/tmp/PDFStudioViewer_linux64.sh"
 
-# Download PDF Studio Viewer installer
 print_status "Downloading PDF Studio Viewer installer..."
-curl -L "$PDF_STUDIO_URL" -o "$PDF_STUDIO_FILE" || {
-    print_error "Failed to download PDF Studio Viewer, skipping installation"
-    PDF_STUDIO_FILE=""
-}
-
-# Install PDF Studio Viewer if download was successful
-if [[ -n "$PDF_STUDIO_FILE" && -f "$PDF_STUDIO_FILE" ]]; then
+if curl -L "https://download.qoppa.com/pdfstudioviewer/PDFStudioViewer_linux64.sh" -o "$PDF_STUDIO_FILE" && validate_download "$PDF_STUDIO_FILE" 1000000; then
     print_status "Installing PDF Studio Viewer..."
     chmod +x "$PDF_STUDIO_FILE"
-    # Run installer in unattended mode (if supported)
-    "$PDF_STUDIO_FILE" -q || {
-        print_error "Unattended installation failed, trying interactive mode..."
-        print_status "PDF Studio Viewer installer will run interactively - please follow the prompts"
-        "$PDF_STUDIO_FILE" || {
-            print_error "Failed to install PDF Studio Viewer, continuing..."
-        }
-    }
     
-    # Clean up downloaded file
+    # Try unattended installation first
+    if "$PDF_STUDIO_FILE" -q; then
+        print_success "PDF Studio Viewer installed successfully in unattended mode"
+    else
+        print_warning "Unattended installation failed, trying interactive mode..."
+        print_status "PDF Studio Viewer installer will run interactively - please follow the prompts"
+        if "$PDF_STUDIO_FILE"; then
+            print_success "PDF Studio Viewer installed successfully in interactive mode"
+        else
+            print_error "Failed to install PDF Studio Viewer"
+        fi
+    fi
+    
     rm -f "$PDF_STUDIO_FILE"
-    print_success "PDF Studio Viewer installation completed"
 else
-    print_error "PDF Studio Viewer installation skipped due to download failure"
+    print_error "Failed to download PDF Studio Viewer"
 fi
 
 print_success "Individual RPM packages installation completed"
@@ -325,209 +400,247 @@ print_success "Individual RPM packages installation completed"
 # Install Git-based projects
 print_status "Installing Git-based projects..."
 
-# Install conky-manager2
-print_status "Installing conky-manager2..."
-CONKY_MANAGER_DIR="/home/mike/conky-manager2/"
-
-# Clone and build conky-manager2
-print_status "Cloning conky-manager2 repository..."
-git clone https://github.com/zcot/conky-manager2.git "$CONKY_MANAGER_DIR" || {
-    print_error "Failed to clone conky-manager2, skipping installation"
-    CONKY_MANAGER_DIR=""
+# Function to safely clone and build git repositories
+clone_and_build() {
+    local repo_url="$1"
+    local project_name="$2"
+    local build_dir="$3"
+    local build_commands="$4"
+    
+    print_status "Installing $project_name..."
+    
+    # Create a temporary directory for cloning
+    local temp_dir="/tmp/${project_name}-$(date +%s)"
+    
+    # Clone repository
+    print_status "Cloning $project_name repository..."
+    if git clone "$repo_url" "$temp_dir"; then
+        print_success "Successfully cloned $project_name"
+        
+        # Change to the cloned directory
+        cd "$temp_dir" || {
+            print_error "Failed to change to $project_name directory"
+            rm -rf "$temp_dir"
+            return 1
+        }
+        
+        # Execute build commands if provided
+        if [[ -n "$build_commands" ]]; then
+            print_status "Building $project_name..."
+            eval "$build_commands" || {
+                print_error "Failed to build $project_name, continuing..."
+                cd - > /dev/null
+                rm -rf "$temp_dir"
+                return 1
+            }
+        fi
+        
+        # Move to final location if specified
+        if [[ -n "$build_dir" ]]; then
+            # Remove existing directory if it exists
+            if [[ -d "$build_dir" ]]; then
+                print_status "Removing existing $project_name directory..."
+                rm -rf "$build_dir"
+            fi
+            
+            # Create parent directory if it doesn't exist
+            mkdir -p "$(dirname "$build_dir")"
+            
+            # Move to final location
+            mv "$temp_dir" "$build_dir" || {
+                print_error "Failed to move $project_name to final location"
+                cd - > /dev/null
+                rm -rf "$temp_dir"
+                return 1
+            }
+            
+            print_success "$project_name installed to $build_dir"
+        else
+            # Clean up temp directory if no final location specified
+            cd - > /dev/null
+            rm -rf "$temp_dir"
+        fi
+        
+        return 0
+    else
+        print_error "Failed to clone $project_name repository"
+        rm -rf "$temp_dir"
+        return 1
+    fi
 }
 
-if [[ -n "$CONKY_MANAGER_DIR" && -d "$CONKY_MANAGER_DIR" ]]; then
-    print_status "Building and installing conky-manager2..."
-    cd "$CONKY_MANAGER_DIR" || {
-        print_error "Failed to change to conky-manager2 directory"
-    }
-    
-    # Build and install
-    make || {
-        print_error "Failed to build conky-manager2, continuing..."
-    }
-    
-    sudo make install || {
-        print_error "Failed to install conky-manager2, continuing..."
-    }
-    
-    # Return to original directory and cleanup
-    cd - > /dev/null
-    print_success "Conky-manager2 installation completed"
-else
-    print_error "Conky-manager2 installation skipped"
-fi
+# Install conky-manager2
+print_status "Installing conky-manager2..."
+CONKY_MANAGER_DIR="$HOME/conky-manager2"
+
+# Clone and build conky-manager2
+clone_and_build \
+    "https://github.com/zcot/conky-manager2.git" \
+    "conky-manager2" \
+    "$CONKY_MANAGER_DIR" \
+    "make && sudo make install" || {
+    print_error "Conky-manager2 installation failed, continuing..."
+}
 
 # Install espanso
 print_status "Installing espanso..."
-ESPANSO_DIR="/home/mike/espanso/"
+ESPANSO_DIR="$HOME/espanso"
 
 # Clone and build espanso
-print_status "Cloning espanso repository..."
-git clone https://github.com/espanso/espanso "$ESPANSO_DIR" || {
-    print_error "Failed to clone espanso, skipping installation"
-    ESPANSO_DIR=""
+clone_and_build \
+    "https://github.com/espanso/espanso.git" \
+    "espanso" \
+    "$ESPANSO_DIR" \
+    "cargo build -p espanso --release --no-default-features --features vendored-tls,modulo" || {
+    print_error "Espanso build failed, continuing..."
 }
 
-if [[ -n "$ESPANSO_DIR" && -d "$ESPANSO_DIR" ]]; then
-    print_status "Building espanso..."
-    cd "$ESPANSO_DIR" || {
-        print_error "Failed to change to espanso directory"
+# Install espanso binary if build was successful
+if [[ -d "$ESPANSO_DIR" && -f "$ESPANSO_DIR/target/release/espanso" ]]; then
+    print_status "Installing espanso binary..."
+    sudo mv "$ESPANSO_DIR/target/release/espanso" /usr/local/bin/espanso || {
+        print_error "Failed to install espanso binary, continuing..."
     }
     
-    # Build espanso with specific features
-    cargo build -p espanso --release --no-default-features --features vendored-tls,modulo || {
-        print_error "Failed to build espanso, continuing..."
+    # Register espanso as systemd service
+    print_status "Registering espanso as systemd service..."
+    /usr/local/bin/espanso service register || {
+        print_error "Failed to register espanso service, continuing..."
     }
     
-    # Install espanso binary
-    if [[ -f "target/release/espanso" ]]; then
-        print_status "Installing espanso binary..."
-        sudo mv target/release/espanso /usr/local/bin/espanso || {
-            print_error "Failed to install espanso binary, continuing..."
-        }
-        
-        # Register espanso as systemd service
-        print_status "Registering espanso as systemd service..."
-        espanso service register || {
-            print_error "Failed to register espanso service, continuing..."
-        }
-        
-        # Start espanso
-        print_status "Starting espanso..."
-        espanso start || {
-            print_error "Failed to start espanso, you may need to start it manually later"
-        }
-        
-        print_success "Espanso installation and setup completed"
-    else
-        print_error "Espanso binary not found after build"
-    fi
+    # Start espanso
+    print_status "Starting espanso..."
+    /usr/local/bin/espanso start || {
+        print_error "Failed to start espanso, you may need to start it manually later"
+    }
     
-    # Return to original directory and cleanup
-    cd - > /dev/null
+    print_success "Espanso installation and setup completed"
 else
-    print_error "Espanso installation skipped"
+    print_error "Espanso binary not found after build"
 fi
 
 # Install kwin-forceblur plugin
 print_status "Installing kwin-forceblur plugin..."
 FORCEBLUR_VERSION="1.3.6"
 FORCEBLUR_URL="https://github.com/taj-ny/kwin-effects-forceblur/archive/refs/tags/v${FORCEBLUR_VERSION}.tar.gz"
-FORCEBLUR_DIR="/home/mike/kwin-effects-forceblur-${FORCEBLUR_VERSION}"
-FORCEBLUR_ARCHIVE="/home/mike/kwin-forceblur-v${FORCEBLUR_VERSION}.tar.gz"
+FORCEBLUR_DIR="$HOME/kwin-effects-forceblur-${FORCEBLUR_VERSION}"
+FORCEBLUR_ARCHIVE="/tmp/kwin-forceblur-v${FORCEBLUR_VERSION}.tar.gz"
 
 # Download and extract kwin-forceblur
 print_status "Downloading kwin-forceblur v${FORCEBLUR_VERSION}..."
-curl -L "$FORCEBLUR_URL" -o "$FORCEBLUR_ARCHIVE" || {
-    print_error "Failed to download kwin-forceblur, skipping installation"
-    FORCEBLUR_ARCHIVE=""
-}
-
-if [[ -n "$FORCEBLUR_ARCHIVE" && -f "$FORCEBLUR_ARCHIVE" ]]; then
+if curl -L "$FORCEBLUR_URL" -o "$FORCEBLUR_ARCHIVE"; then
     print_status "Extracting kwin-forceblur..."
-    cd /tmp
-    tar -xzf "$FORCEBLUR_ARCHIVE" || {
-        print_error "Failed to extract kwin-forceblur, skipping installation"
-        FORCEBLUR_DIR=""
+    cd /tmp || {
+        print_error "Failed to change to /tmp directory"
     }
     
-    if [[ -n "$FORCEBLUR_DIR" && -d "$FORCEBLUR_DIR" ]]; then
-        print_status "Building kwin-forceblur..."
-        cd "$FORCEBLUR_DIR" || {
-            print_error "Failed to change to kwin-forceblur directory"
-        }
+    if tar -xzf "$FORCEBLUR_ARCHIVE"; then
+        # Find the extracted directory
+        local extracted_dir=$(find /tmp -maxdepth 1 -name "kwin-effects-forceblur-*" -type d | head -1)
         
-        # Create build directory and build
-        mkdir -p build
-        cd build || {
-            print_error "Failed to change to build directory"
-        }
-        
-        cmake .. -DCMAKE_INSTALL_PREFIX=/usr || {
-            print_error "Failed to configure kwin-forceblur with cmake, continuing..."
-        }
-        
-        make -j$(nproc) || {
-            print_error "Failed to build kwin-forceblur, continuing..."
-        }
-        
-        sudo make install || {
-            print_error "Failed to install kwin-forceblur, continuing..."
-        }
-        
-        # Apply OpenMandriva-specific fixes based on the installation steps file
-        print_status "Applying OpenMandriva-specific plugin fixes..."
-        
-        # Create Qt6 plugin directories
-        sudo mkdir -p /usr/lib64/qt6/plugins/kwin/effects/plugins
-        sudo mkdir -p /usr/lib64/qt6/plugins/kwin/effects/configs
-        sudo mkdir -p /usr/share/kwin/effects/forceblur
-        
-        # Copy plugin files to correct Qt6 locations
-        if [[ -f "src/forceblur.so" ]]; then
-            print_status "Copying plugin binary to Qt6 directory..."
-            sudo cp src/forceblur.so /usr/lib64/qt6/plugins/kwin/effects/plugins/ || {
-                print_error "Failed to copy plugin binary"
+        if [[ -n "$extracted_dir" && -d "$extracted_dir" ]]; then
+            print_status "Building kwin-forceblur..."
+            cd "$extracted_dir" || {
+                print_error "Failed to change to kwin-forceblur directory"
             }
-        fi
-        
-        if [[ -f "src/kcm/kwin_better_blur_config.so" ]]; then
-            print_status "Copying configuration module to Qt6 directory..."
-            sudo cp src/kcm/kwin_better_blur_config.so /usr/lib64/qt6/plugins/kwin/effects/configs/ || {
-                print_error "Failed to copy configuration module"
+            
+            # Create build directory and build
+            mkdir -p build
+            cd build || {
+                print_error "Failed to change to build directory"
             }
-        fi
-        
-        if [[ -f "../src/metadata.json" ]]; then
-            print_status "Copying metadata file..."
-            sudo cp ../src/metadata.json /usr/share/kwin/effects/forceblur/ || {
-                print_error "Failed to copy metadata file"
-            }
-        fi
-        
-        # Verify installations
-        print_status "Verifying kwin-forceblur installation..."
-        if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/plugins/forceblur.so" ]]; then
-            print_success "Plugin binary installed successfully"
+            
+            if cmake .. -DCMAKE_INSTALL_PREFIX=/usr; then
+                if make -j$(nproc); then
+                    if sudo make install; then
+                        # Apply OpenMandriva-specific fixes based on the installation steps file
+                        print_status "Applying OpenMandriva-specific plugin fixes..."
+                        
+                        # Create Qt6 plugin directories
+                        sudo mkdir -p /usr/lib64/qt6/plugins/kwin/effects/plugins
+                        sudo mkdir -p /usr/lib64/qt6/plugins/kwin/effects/configs
+                        sudo mkdir -p /usr/share/kwin/effects/forceblur
+                        
+                        # Copy plugin files to correct Qt6 locations
+                        if [[ -f "src/forceblur.so" ]]; then
+                            print_status "Copying plugin binary to Qt6 directory..."
+                            sudo cp src/forceblur.so /usr/lib64/qt6/plugins/kwin/effects/plugins/ || {
+                                print_error "Failed to copy plugin binary"
+                            }
+                        fi
+                        
+                        if [[ -f "src/kcm/kwin_better_blur_config.so" ]]; then
+                            print_status "Copying configuration module to Qt6 directory..."
+                            sudo cp src/kcm/kwin_better_blur_config.so /usr/lib64/qt6/plugins/kwin/effects/configs/ || {
+                                print_error "Failed to copy configuration module"
+                            }
+                        fi
+                        
+                        if [[ -f "../src/metadata.json" ]]; then
+                            print_status "Copying metadata file..."
+                            sudo cp ../src/metadata.json /usr/share/kwin/effects/forceblur/ || {
+                                print_error "Failed to copy metadata file"
+                            }
+                        fi
+                        
+                        # Verify installations
+                        print_status "Verifying kwin-forceblur installation..."
+                        if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/plugins/forceblur.so" ]]; then
+                            print_success "Plugin binary installed successfully"
+                        else
+                            print_error "Plugin binary not found in expected location"
+                        fi
+                        
+                        if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/configs/kwin_better_blur_config.so" ]]; then
+                            print_success "Configuration module installed successfully"
+                        else
+                            print_error "Configuration module not found in expected location"
+                        fi
+                        
+                        if [[ -f "/usr/share/kwin/effects/forceblur/metadata.json" ]]; then
+                            print_success "Metadata file installed successfully"
+                        else
+                            print_error "Metadata file not found in expected location"
+                        fi
+                        
+                        print_success "Kwin-forceblur plugin installation completed"
+                        print_status "Note: You may need to restart KWin or reboot to see the plugin in System Settings"
+                    else
+                        print_error "Failed to install kwin-forceblur, continuing..."
+                    fi
+                else
+                    print_error "Failed to build kwin-forceblur, continuing..."
+                fi
+            else
+                print_error "Failed to configure kwin-forceblur with cmake, continuing..."
+            fi
+            
+            # Return to original directory
+            cd - > /dev/null
         else
-            print_error "Plugin binary not found in expected location"
+            print_error "Failed to extract kwin-forceblur, skipping installation"
         fi
-        
-        if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/configs/kwin_better_blur_config.so" ]]; then
-            print_success "Configuration module installed successfully"
-        else
-            print_error "Configuration module not found in expected location"
-        fi
-        
-        if [[ -f "/usr/share/kwin/effects/forceblur/metadata.json" ]]; then
-            print_success "Metadata file installed successfully"
-        else
-            print_error "Metadata file not found in expected location"
-        fi
-        
-        print_success "Kwin-forceblur plugin installation completed"
-        print_status "Note: You may need to restart KWin or reboot to see the plugin in System Settings"
-        
-        # Return to original directory
-        cd - > /dev/null
+    else
+        print_error "Failed to extract kwin-forceblur, skipping installation"
     fi
     
+    # Clean up downloaded file
+    rm -f "$FORCEBLUR_ARCHIVE"
 else
-    print_error "Kwin-forceblur installation skipped"
+    print_error "Failed to download kwin-forceblur, skipping installation"
 fi
 
 print_success "Git-based projects installation completed"
 
 # Setup Dotfiles
 print_status "Setting up dotfiles..."
-if [[ -d "$stow_dir" ]]; then
-    print_status "Removing existing stow directory..."
-    rm -rf "$stow_dir"
-fi
 
-print_status "Cloning dotfiles repository..."
-git clone "$dotfiles" "$stow_dir" || {
+# Clone dotfiles repository safely
+clone_and_build \
+    "$dotfiles" \
+    "dotfiles" \
+    "$stow_dir" \
+    "" || {
     print_error "Failed to clone dotfiles repository"
     exit 1
 }
