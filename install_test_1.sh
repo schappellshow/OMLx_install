@@ -407,6 +407,52 @@ fi
 
 print_success "Individual RPM packages installation completed"
 
+# Install Cursor AppImage
+print_status "Installing Cursor AppImage..."
+
+# Create applications directory if it doesn't exist
+CURSOR_DIR="$HOME/.local/bin"
+mkdir -p "$CURSOR_DIR"
+
+# Download Cursor AppImage
+CURSOR_URL="https://download.todesktop.com/230313mzl4w92u92/linux/x64"
+CURSOR_FILE="$CURSOR_DIR/cursor.AppImage"
+
+print_status "Downloading Cursor AppImage..."
+if curl -L "$CURSOR_URL" -o "$CURSOR_FILE"; then
+    # Make AppImage executable
+    chmod +x "$CURSOR_FILE"
+    
+    # Create desktop entry
+    print_status "Creating Cursor desktop entry..."
+    mkdir -p "$HOME/.local/share/applications"
+    cat > "$HOME/.local/share/applications/cursor.desktop" << EOF
+[Desktop Entry]
+Name=Cursor
+Comment=AI-first code editor
+Exec=$CURSOR_FILE
+Icon=cursor
+Type=Application
+Categories=Development;IDE;
+StartupWMClass=cursor
+EOF
+    
+    # Create icon symlink if possible
+    if [[ -f "$CURSOR_FILE" ]]; then
+        # Extract icon from AppImage (this is a simplified approach)
+        print_status "Setting up Cursor icon..."
+        # Note: AppImages can be mounted to extract icons, but for simplicity we'll use a generic icon
+        # You can manually add an icon later if needed
+    fi
+    
+    print_success "Cursor AppImage installed successfully"
+    print_status "Cursor is available at: $CURSOR_FILE"
+    print_status "You can launch it from your applications menu or by running: $CURSOR_FILE"
+else
+    print_error "Failed to download Cursor AppImage"
+    print_warning "Continuing with remaining installations..."
+fi
+
 # Install Git-based projects
 print_status "Installing Git-based projects..."
 
@@ -508,11 +554,35 @@ fi
 
 # Install espanso
 print_status "Installing espanso..."
-ESPANSO_DIR="$HOME/espanso"
+
+# Ask user for espanso installation method
+print_status "Espanso can be installed using two methods:"
+echo "  1) Build from source (requires dependencies, may have compilation issues)"
+echo "  2) Install AppImage (no compilation, faster, self-contained)"
+echo
+
+read -p "Which method would you prefer for espanso? (1/2): " -r espanso_method
+
+if [[ "$espanso_method" == "2" ]]; then
+    print_status "Installing espanso using AppImage..."
+    
+    # Run the AppImage installation script
+    if [[ -f "./install_espanso_appimage.sh" ]]; then
+        bash ./install_espanso_appimage.sh
+    else
+        print_error "Espanso AppImage installation script not found"
+        print_warning "Falling back to source build method"
+        espanso_method="1"
+    fi
+fi
+
+if [[ "$espanso_method" == "1" ]]; then
+    print_status "Installing espanso from source..."
+    ESPANSO_DIR="$HOME/espanso"
 
 # Install X11 development dependencies for espanso
 print_status "Installing espanso X11 dependencies..."
-sudo dnf install -y lib64x11-devel.x86_64 lib64xkbcommon-devel.x86_64 lib64xrandr-devel.x86_64 || {
+sudo dnf install -y lib64x11-devel.x86_64 lib64xkbcommon-devel.x86_64 lib64xrandr-devel.x86_64 lib64xtst-devel.x86_64 || {
     print_warning "Some X11 dependencies failed to install"
 }
 
@@ -569,6 +639,13 @@ fi
 
 # Install kwin-forceblur plugin
 print_status "Installing kwin-forceblur plugin..."
+
+# Install ECM (Extra CMake Modules) for kwin-forceblur
+print_status "Installing ECM for kwin-forceblur..."
+sudo dnf install -y extra-cmake-modules.noarch || {
+    print_warning "Failed to install ECM, kwin-forceblur may not build"
+}
+
 FORCEBLUR_VERSION="1.3.6"
 FORCEBLUR_URL="https://github.com/taj-ny/kwin-effects-forceblur/archive/refs/tags/v${FORCEBLUR_VERSION}.tar.gz"
 FORCEBLUR_DIR="$HOME/kwin-effects-forceblur-${FORCEBLUR_VERSION}"
@@ -748,10 +825,15 @@ cd "$stow_dir" || {
 # Create config directory if it doesn't exist
 mkdir -p "$config"
 
-# Apply stow configuration
-stow . || {
-    print_error "Failed to apply dotfiles with stow"
-    exit 1
+# Apply stow configuration with adopt flag to handle conflicts
+print_status "Applying dotfiles with stow (adopting existing files)..."
+stow . --adopt || {
+    print_warning "Stow failed with --adopt, trying without..."
+    stow . || {
+        print_error "Failed to apply dotfiles with stow"
+        print_warning "You may need to manually resolve conflicts in your dotfiles"
+        exit 1
+    }
 }
 
 print_success "Dotfiles applied successfully."

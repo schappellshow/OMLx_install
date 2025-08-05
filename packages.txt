@@ -776,6 +776,7 @@ lib64stdc++-devel.x86_64
 lib64x11-devel.x86_64
 lib64xkbcommon-devel.x86_64
 lib64xrandr-devel.x86_64
+lib64xtst-devel.x86_64
 
 # =============================================================================
 # MAILSPRING DEPENDENCIES

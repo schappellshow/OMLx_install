@@ -11,3 +11,4 @@ org.signal.Signal	7.63.0
 org.telegram.desktop	5.16.4
 org.telegram.desktop.webview
 us.zoom.Zoom
+it.mijorus.gearlever
