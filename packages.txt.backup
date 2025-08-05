@@ -16,7 +16,6 @@
 # Core build tools
 pkgconf.x86_64
 lib64openssl-devel.x86_64
-libopenssl-devel.x86_64
 lib64z-devel.x86_64
 
 # C/C++ development
@@ -115,7 +114,6 @@ lib64harfbuzz-devel.x86_64
 
 # Additional Proton Pass dependencies - corrected names
 lib64openssl-devel.x86_64
-libopenssl-devel.x86_64
 lib64z-devel.x86_64
 lib64ffi-devel.x86_64
 lib64xml2-devel.x86_64

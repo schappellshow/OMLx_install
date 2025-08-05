@@ -92,19 +92,46 @@ print_success "Build tools and core dependencies installed."
 # Install native packages via dnf
 print_status "Installing native packages from $packages..."
 if [[ -s "$packages" ]]; then
-    # Read packages line by line to handle any formatting issues
-    while IFS= read -r package || [[ -n "$package" ]]; do
-        # Skip empty lines and comments
-        [[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
-        # Extract just the package name (before any version info)
-        package_name=$(echo "$package" | awk '{print $1}' | cut -d'-' -f1-2)
-        print_status "Installing: $package_name"
-    done < "$packages"
-    
-    # Install all packages at once
-    sudo dnf install -y $(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}' | cut -d'-' -f1-2) || {
-        print_error "Some native packages failed to install. Continuing anyway..."
-    }
+    # First, try to install all packages at once for efficiency
+    print_status "Attempting bulk package installation..."
+    if sudo dnf install -y $(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}'); then
+        print_success "All packages installed successfully in bulk!"
+    else
+        print_warning "Bulk installation failed, trying individual packages..."
+        
+        # Track failed packages for individual retry
+        local failed_packages=()
+        local successful_packages=()
+        
+        # Read packages line by line and install individually
+        while IFS= read -r package || [[ -n "$package" ]]; do
+            # Skip empty lines and comments
+            [[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
+            
+            # Extract just the package name (before any version info)
+            package_name=$(echo "$package" | awk '{print $1}')
+            print_status "Installing: $package_name"
+            
+            # Try to install individual package
+            if sudo dnf install -y "$package_name" 2>/dev/null; then
+                print_success "✓ Installed: $package_name"
+                successful_packages+=("$package_name")
+            else
+                print_warning "⚠ Failed to install: $package_name"
+                failed_packages+=("$package_name")
+            fi
+        done < "$packages"
+        
+        # Report results
+        print_status "Package installation summary:"
+        print_success "Successfully installed: ${#successful_packages[@]} packages"
+        if [[ ${#failed_packages[@]} -gt 0 ]]; then
+            print_warning "Failed to install: ${#failed_packages[@]} packages"
+            for pkg in "${failed_packages[@]}"; do
+                print_warning "  - $pkg"
+            done
+        fi
+    fi
 else
     print_error "Package list file is empty"
     exit 1
@@ -132,43 +159,7 @@ fi
 
 print_success "Flatpak applications installation completed."
 
-# Install Cargo applications
-print_status "Installing cargo applications..."
 
-# Define cargo applications to install
-cargo_apps=("cargo-make" "cargo-update" "fd-find" "resvg" "ripgrep" "rust-script" "yazi-fm" "yazi-cli")
-
-# Install cargo applications one by one for better error handling
-for app in "${cargo_apps[@]}"; do
-    print_status "Installing cargo app: $app"
-    
-    # Try installation with detailed error reporting
-    if cargo install --locked "$app" 2>&1 | tee "/tmp/cargo_${app}_install.log"; then
-        print_success "$app installed successfully"
-    else
-        print_warning "$app installation failed, checking for dependency issues..."
-        
-        # Check for common issues
-        if grep -q "linking" "/tmp/cargo_${app}_install.log"; then
-            print_warning "$app has linking issues - may need additional development libraries"
-        fi
-        
-        if grep -q "not found" "/tmp/cargo_${app}_install.log"; then
-            print_warning "$app has missing library issues - may need additional packages"
-        fi
-        
-        # Try alternative installation method
-        print_status "Trying alternative installation method for $app..."
-        if cargo install --locked --verbose "$app" 2>&1 | tee "/tmp/cargo_${app}_verbose.log"; then
-            print_success "$app installed successfully with verbose mode"
-        else
-            print_error "Failed to install $app with all methods"
-            print_warning "Continuing with remaining cargo applications..."
-        fi
-    fi
-done
-
-print_success "Cargo applications installation completed"
 
 # Install Python applications via pip
 print_status "Installing Python applications via pip..."
@@ -525,6 +516,24 @@ sudo dnf install -y lib64x11-devel.x86_64 lib64xkbcommon-devel.x86_64 lib64xrand
     print_warning "Some X11 dependencies failed to install"
 }
 
+# Install OpenSSL development dependencies for espanso cargo build
+print_status "Installing espanso OpenSSL dependencies..."
+sudo dnf install -y libopenssl-devel.x86_64 lib64openssl-devel.x86_64 || {
+    print_warning "Some OpenSSL dependencies failed to install"
+}
+
+# Configure OpenSSL for espanso cargo build
+print_status "Configuring OpenSSL for espanso build..."
+export OPENSSL_DIR=$(pkg-config --variable=prefix openssl)
+export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$PKG_CONFIG_PATH"
+
+print_status "OpenSSL configuration for espanso:"
+print_status "  OPENSSL_DIR: $OPENSSL_DIR"
+print_status "  OPENSSL_LIB_DIR: $OPENSSL_LIB_DIR"
+print_status "  OPENSSL_INCLUDE_DIR: $OPENSSL_INCLUDE_DIR"
+
 # Clone and build espanso
 clone_and_build \
     "https://github.com/espanso/espanso.git" \
@@ -750,10 +759,50 @@ print_success "Dotfiles applied successfully."
 # Return to original directory
 cd - > /dev/null
 
+# Install Cargo applications (optional)
+print_status "\n=== CARGO APPLICATIONS INSTALLATION ==="
+print_status "Cargo applications can take a while to compile. Would you like to install them now?"
+print_status "Available applications:"
+echo "  • cargo-make    - Task runner and build tool"
+echo "  • cargo-update  - Update installed binaries"
+echo "  • fd-find       - Fast file finder"
+echo "  • resvg         - SVG renderer"
+echo "  • ripgrep       - Fast text search"
+echo "  • rust-script   - Rust scripting tool"
+echo "  • yazi-fm       - Terminal file manager"
+echo "  • yazi-cli      - Yazi command line interface"
+echo
+
+read -p "Would you like to install cargo applications now? (y/N): " -r install_cargo
+
+if [[ $install_cargo =~ ^[Yy]$ ]]; then
+    print_status "Installing cargo applications..."
+    
+    # Check if cargo is available
+    if ! command -v cargo >/dev/null 2>&1; then
+        print_error "Cargo is not installed. Please install Rust and Cargo first."
+        print_status "You can install Rust by running: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+        print_warning "Skipping cargo applications installation"
+    else
+        # Run the cargo installation script
+        if [[ -f "./install_cargo_apps.sh" ]]; then
+            print_status "Running cargo installation script..."
+            bash ./install_cargo_apps.sh
+        else
+            print_error "Cargo installation script not found: install_cargo_apps.sh"
+            print_warning "You can run the cargo installation later with: bash install_cargo_apps.sh"
+        fi
+    fi
+else
+    print_warning "Skipping cargo applications installation"
+    print_status "You can install cargo applications later by running: bash install_cargo_apps.sh"
+fi
+
 print_success "\n🎉 Installation script completed successfully!"
 print_status "\nNext steps:"
 print_status "1. Reboot your system to ensure all changes take effect"
 print_status "2. Log out and log back in to apply dotfiles changes"
 print_status "3. Check that all applications are working correctly"
+print_status "4. Install cargo applications later if needed: bash install_cargo_apps.sh"
 
 print_status "\nInstallation log saved. Check for any warnings above."
