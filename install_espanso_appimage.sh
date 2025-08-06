@@ -156,7 +156,7 @@ main() {
             print_status "You can now use espanso from anywhere in your terminal"
         else
             print_error "Espanso AppImage installation failed"
-            exit 1
+            return 1
         fi
     else
         print_warning "Skipping espanso AppImage installation"

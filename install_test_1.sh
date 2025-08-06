@@ -524,7 +524,13 @@ if [[ "$espanso_method" == "2" ]]; then
     
     # Run the AppImage installation script
     if [[ -f "./install_espanso_appimage.sh" ]]; then
-        bash ./install_espanso_appimage.sh
+        if bash ./install_espanso_appimage.sh; then
+            print_success "Espanso AppImage installation completed"
+        else
+            print_error "Espanso AppImage installation failed"
+            print_warning "Falling back to source build method"
+            espanso_method="1"
+        fi
     else
         print_error "Espanso AppImage installation script not found"
         print_warning "Falling back to source build method"
