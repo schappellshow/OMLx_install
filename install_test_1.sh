@@ -100,8 +100,8 @@ if [[ -s "$packages" ]]; then
         print_warning "Bulk installation failed, trying individual packages..."
         
         # Track failed packages for individual retry
-        local failed_packages=()
-        local successful_packages=()
+        failed_packages=()
+        successful_packages=()
         
         # Read packages line by line and install individually
         while IFS= read -r package || [[ -n "$package" ]]; do

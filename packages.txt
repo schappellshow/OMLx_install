@@ -321,7 +321,7 @@ lib64gtk4_1.x86_64
 lib64gtk4-layer-shell.x86_64
 lib64gtk-gir3.0.x86_64
 lib64gtk-gir4.0.x86_64
-lib64gtksourceview
+gtksourceview3.x86_64
 lib64gtksourceview-gir4.x86_64
 lib64gtk-vnc2.0_0.x86_64
 lib64gtk-vnc-gir2.0.x86_64
@@ -386,7 +386,7 @@ lib64krb5-devel.x86_64
 lib64kvazaar.x86_64
 lib64leptonica.x86_64
 lib64liveMedia107.x86_64
-lib64luajit
+luajit.x86_64
 lib64luv1.x86_64
 lib64lzma-devel.x86_64
 lib64lzo-devel.x86_64
