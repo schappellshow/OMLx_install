@@ -410,8 +410,8 @@ print_success "Individual RPM packages installation completed"
 # Install Cursor AppImage
 print_status "Installing Cursor AppImage..."
 
-# Create applications directory if it doesn't exist
-CURSOR_DIR="$HOME/.local/bin"
+# Create app_images directory if it doesn't exist
+CURSOR_DIR="$HOME/app_images"
 mkdir -p "$CURSOR_DIR"
 
 # Download Cursor AppImage
@@ -423,31 +423,9 @@ if curl -L "$CURSOR_URL" -o "$CURSOR_FILE"; then
     # Make AppImage executable
     chmod +x "$CURSOR_FILE"
     
-    # Create desktop entry
-    print_status "Creating Cursor desktop entry..."
-    mkdir -p "$HOME/.local/share/applications"
-    cat > "$HOME/.local/share/applications/cursor.desktop" << EOF
-[Desktop Entry]
-Name=Cursor
-Comment=AI-first code editor
-Exec=$CURSOR_FILE
-Icon=cursor
-Type=Application
-Categories=Development;IDE;
-StartupWMClass=cursor
-EOF
-    
-    # Create icon symlink if possible
-    if [[ -f "$CURSOR_FILE" ]]; then
-        # Extract icon from AppImage (this is a simplified approach)
-        print_status "Setting up Cursor icon..."
-        # Note: AppImages can be mounted to extract icons, but for simplicity we'll use a generic icon
-        # You can manually add an icon later if needed
-    fi
-    
-    print_success "Cursor AppImage installed successfully"
+    print_success "Cursor AppImage downloaded successfully"
     print_status "Cursor is available at: $CURSOR_FILE"
-    print_status "You can launch it from your applications menu or by running: $CURSOR_FILE"
+    print_status "You can manage it with Gear Lever or run it directly: $CURSOR_FILE"
 else
     print_error "Failed to download Cursor AppImage"
     print_warning "Continuing with remaining installations..."
@@ -888,3 +866,4 @@ print_status "3. Check that all applications are working correctly"
 print_status "4. Install cargo applications later if needed: bash install_cargo_apps.sh"
 
 print_status "\nInstallation log saved. Check for any warnings above."
+
