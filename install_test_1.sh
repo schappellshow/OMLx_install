@@ -407,29 +407,7 @@ fi
 
 print_success "Individual RPM packages installation completed"
 
-# Install Cursor AppImage
-print_status "Installing Cursor AppImage..."
 
-# Create app_images directory if it doesn't exist
-CURSOR_DIR="$HOME/app_images"
-mkdir -p "$CURSOR_DIR"
-
-# Download Cursor AppImage
-CURSOR_URL="https://download.todesktop.com/230313mzl4w92u92/linux/x64"
-CURSOR_FILE="$CURSOR_DIR/cursor.AppImage"
-
-print_status "Downloading Cursor AppImage..."
-if curl -L "$CURSOR_URL" -o "$CURSOR_FILE"; then
-    # Make AppImage executable
-    chmod +x "$CURSOR_FILE"
-    
-    print_success "Cursor AppImage downloaded successfully"
-    print_status "Cursor is available at: $CURSOR_FILE"
-    print_status "You can manage it with Gear Lever or run it directly: $CURSOR_FILE"
-else
-    print_error "Failed to download Cursor AppImage"
-    print_warning "Continuing with remaining installations..."
-fi
 
 # Install Git-based projects
 print_status "Installing Git-based projects..."
@@ -856,6 +834,31 @@ if [[ $install_cargo =~ ^[Yy]$ ]]; then
 else
     print_warning "Skipping cargo applications installation"
     print_status "You can install cargo applications later by running: bash install_cargo_apps.sh"
+fi
+
+# Install Cursor AppImage (moved to end to avoid interference)
+print_status "\n=== CURSOR APPIMAGE INSTALLATION ==="
+print_status "Installing Cursor AppImage..."
+
+# Create app_images directory if it doesn't exist
+CURSOR_DIR="$HOME/app_images"
+mkdir -p "$CURSOR_DIR"
+
+# Download Cursor AppImage
+CURSOR_URL="https://download.todesktop.com/230313mzl4w92u92/linux/x64"
+CURSOR_FILE="$CURSOR_DIR/cursor.AppImage"
+
+print_status "Downloading Cursor AppImage..."
+if curl -L "$CURSOR_URL" -o "$CURSOR_FILE"; then
+    # Make AppImage executable
+    chmod +x "$CURSOR_FILE"
+    
+    print_success "Cursor AppImage downloaded successfully"
+    print_status "Cursor is available at: $CURSOR_FILE"
+    print_status "You can manage it with Gear Lever or run it directly: $CURSOR_FILE"
+else
+    print_error "Failed to download Cursor AppImage"
+    print_warning "Continuing with remaining installations..."
 fi
 
 print_success "\n🎉 Installation script completed successfully!"
