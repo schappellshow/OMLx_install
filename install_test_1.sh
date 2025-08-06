@@ -508,95 +508,79 @@ else
     }
 fi
 
-# Install espanso
-print_status "Installing espanso..."
+# Install espanso using AppImage
+print_status "Installing espanso using AppImage..."
 
-# Ask user for espanso installation method
-print_status "Espanso can be installed using two methods:"
-echo "  1) Build from source (requires dependencies, may have compilation issues)"
-echo "  2) Install AppImage (no compilation, faster, self-contained)"
-echo
+# Create the $HOME/opt destination folder (official method)
+ESPANSO_DIR="$HOME/opt"
+mkdir -p "$ESPANSO_DIR"
 
-read -p "Which method would you prefer for espanso? (1/2): " -r espanso_method
+# Download the AppImage inside it (official URL)
+ESPANSO_URL="https://github.com/espanso/espanso/releases/download/v2.2.1/Espanso-X11.AppImage"
+ESPANSO_FILE="$ESPANSO_DIR/Espanso.AppImage"
 
-if [[ "$espanso_method" == "2" ]]; then
-    print_status "Installing espanso using AppImage..."
+print_status "Downloading espanso AppImage..."
+if curl -L "$ESPANSO_URL" -o "$ESPANSO_FILE"; then
+    print_success "Espanso AppImage downloaded successfully"
     
-    # Run the AppImage installation script
-    if [[ -f "./install_espanso_appimage.sh" ]]; then
-        if bash ./install_espanso_appimage.sh; then
-            print_success "Espanso AppImage installation completed"
+    # Make it executable (official method)
+    chmod u+x "$ESPANSO_FILE"
+    
+    # Create the "espanso" command alias (official method)
+    print_status "Registering espanso command alias..."
+    if sudo "$ESPANSO_FILE" env-path register; then
+        print_success "Espanso command alias registered successfully"
+        
+        # Register espanso as a systemd service (official method)
+        print_status "Registering espanso service..."
+        if espanso service register; then
+            print_success "Espanso service registered successfully"
+            
+            # Start espanso (official method)
+            print_status "Starting espanso..."
+            if espanso start; then
+                print_success "Espanso started successfully"
+            else
+                print_warning "Failed to start espanso, you may need to start it manually later"
+            fi
         else
-            print_error "Espanso AppImage installation failed"
-            print_warning "Falling back to source build method"
-            espanso_method="1"
+            print_warning "Failed to register espanso service, continuing..."
         fi
     else
-        print_error "Espanso AppImage installation script not found"
-        print_warning "Falling back to source build method"
-        espanso_method="1"
+        print_warning "Failed to register espanso command alias, but continuing..."
     fi
+    
+    print_success "Espanso AppImage installation completed"
+    print_status "Espanso is available at: $ESPANSO_FILE"
+    print_status "You can run espanso from anywhere in your terminal"
+else
+    print_error "Failed to download espanso AppImage"
+    print_warning "Continuing with remaining installations..."
 fi
 
-if [[ "$espanso_method" == "1" ]]; then
-    print_status "Installing espanso from source..."
-    ESPANSO_DIR="$HOME/espanso"
+# Install Cursor AppImage
+print_status "\n=== CURSOR APPIMAGE INSTALLATION ==="
+print_status "Installing Cursor AppImage..."
 
-# Install X11 development dependencies for espanso
-print_status "Installing espanso X11 dependencies..."
-sudo dnf install -y lib64x11-devel.x86_64 lib64xkbcommon-devel.x86_64 lib64xrandr-devel.x86_64 lib64xtst-devel.x86_64 || {
-    print_warning "Some X11 dependencies failed to install"
-}
+# Create app_images directory if it doesn't exist
+CURSOR_DIR="$HOME/app_images"
+mkdir -p "$CURSOR_DIR"
 
-# Install OpenSSL development dependencies for espanso cargo build
-print_status "Installing espanso OpenSSL dependencies..."
-sudo dnf install -y libopenssl-devel.x86_64 lib64openssl-devel.x86_64 || {
-    print_warning "Some OpenSSL dependencies failed to install"
-}
+# Download Cursor AppImage
+CURSOR_URL="https://download.todesktop.com/230313mzl4w92u92/linux/x64"
+CURSOR_FILE="$CURSOR_DIR/cursor.AppImage"
 
-# Configure OpenSSL for espanso cargo build
-print_status "Configuring OpenSSL for espanso build..."
-export OPENSSL_DIR=$(pkg-config --variable=prefix openssl)
-export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
-export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
-export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$PKG_CONFIG_PATH"
-
-print_status "OpenSSL configuration for espanso:"
-print_status "  OPENSSL_DIR: $OPENSSL_DIR"
-print_status "  OPENSSL_LIB_DIR: $OPENSSL_LIB_DIR"
-print_status "  OPENSSL_INCLUDE_DIR: $OPENSSL_INCLUDE_DIR"
-
-# Clone and build espanso
-clone_and_build \
-    "https://github.com/espanso/espanso.git" \
-    "espanso" \
-    "$ESPANSO_DIR" \
-    "cargo build -p espanso --release --no-default-features --features vendored-tls,modulo" || {
-    print_error "Espanso build failed, continuing..."
-}
-
-# Install espanso binary if build was successful
-if [[ -d "$ESPANSO_DIR" && -f "$ESPANSO_DIR/target/release/espanso" ]]; then
-    print_status "Installing espanso binary..."
-    sudo mv "$ESPANSO_DIR/target/release/espanso" /usr/local/bin/espanso || {
-        print_error "Failed to install espanso binary, continuing..."
-    }
+print_status "Downloading Cursor AppImage..."
+if curl -L "$CURSOR_URL" -o "$CURSOR_FILE"; then
+    # Make AppImage executable
+    chmod +x "$CURSOR_FILE"
     
-    # Register espanso as systemd service
-    print_status "Registering espanso as systemd service..."
-    /usr/local/bin/espanso service register || {
-        print_error "Failed to register espanso service, continuing..."
-    }
-    
-    # Start espanso
-    print_status "Starting espanso..."
-    /usr/local/bin/espanso start || {
-        print_error "Failed to start espanso, you may need to start it manually later"
-    }
-    
-    print_success "Espanso installation and setup completed"
+    print_success "Cursor AppImage downloaded successfully"
+    print_status "Cursor is available at: $CURSOR_FILE"
+    print_status "You can manage it with Gear Lever or run it directly: $CURSOR_FILE"
 else
-    print_error "Espanso binary not found after build"
+    print_error "Failed to download Cursor AppImage"
+    print_warning "Continuing with remaining installations..."
 fi
 
 # Install kwin-forceblur plugin
@@ -840,31 +824,6 @@ if [[ $install_cargo =~ ^[Yy]$ ]]; then
 else
     print_warning "Skipping cargo applications installation"
     print_status "You can install cargo applications later by running: bash install_cargo_apps.sh"
-fi
-
-# Install Cursor AppImage (moved to end to avoid interference)
-print_status "\n=== CURSOR APPIMAGE INSTALLATION ==="
-print_status "Installing Cursor AppImage..."
-
-# Create app_images directory if it doesn't exist
-CURSOR_DIR="$HOME/app_images"
-mkdir -p "$CURSOR_DIR"
-
-# Download Cursor AppImage
-CURSOR_URL="https://download.todesktop.com/230313mzl4w92u92/linux/x64"
-CURSOR_FILE="$CURSOR_DIR/cursor.AppImage"
-
-print_status "Downloading Cursor AppImage..."
-if curl -L "$CURSOR_URL" -o "$CURSOR_FILE"; then
-    # Make AppImage executable
-    chmod +x "$CURSOR_FILE"
-    
-    print_success "Cursor AppImage downloaded successfully"
-    print_status "Cursor is available at: $CURSOR_FILE"
-    print_status "You can manage it with Gear Lever or run it directly: $CURSOR_FILE"
-else
-    print_error "Failed to download Cursor AppImage"
-    print_warning "Continuing with remaining installations..."
 fi
 
 print_success "\n🎉 Installation script completed successfully!"
