@@ -32,31 +32,27 @@ print_warning() {
 install_espanso_appimage() {
     print_status "Installing espanso using AppImage..."
     
-    # Create espanso directory
-    local espanso_dir="$HOME/.local/bin"
+    # Create the $HOME/opt destination folder (official method)
+    local espanso_dir="$HOME/opt"
     mkdir -p "$espanso_dir"
     
-    # Download espanso AppImage
-    local appimage_url="https://github.com/federico-terzi/espanso/releases/latest/download/espanso-linux-x86_64.AppImage"
-    local appimage_path="$espanso_dir/espanso.AppImage"
+    # Download the AppImage inside it (official URL)
+    local appimage_url="https://github.com/espanso/espanso/releases/download/v2.2.1/Espanso-X11.AppImage"
+    local appimage_path="$espanso_dir/Espanso.AppImage"
     
     print_status "Downloading espanso AppImage..."
-    if curl -L "$appimage_url" -o "$appimage_path"; then
+    if wget -O "$appimage_path" "$appimage_url"; then
         print_success "Espanso AppImage downloaded successfully"
         
-        # Make AppImage executable
-        chmod +x "$appimage_path"
+        # Make it executable (official method)
+        chmod u+x "$appimage_path"
         
-        # Create symlink for easier access
-        if [[ ! -L "$espanso_dir/espanso" ]]; then
-            ln -sf "$appimage_path" "$espanso_dir/espanso"
-        fi
-        
-        # Add to PATH if not already there
-        if [[ ":$PATH:" != *":$espanso_dir:"* ]]; then
-            echo "export PATH=\"$espanso_dir:\$PATH\"" >> "$HOME/.bashrc"
-            echo "export PATH=\"$espanso_dir:\$PATH\"" >> "$HOME/.zshrc"
-            export PATH="$espanso_dir:$PATH"
+        # Create the "espanso" command alias (official method)
+        print_status "Registering espanso command alias..."
+        if sudo "$appimage_path" env-path register; then
+            print_success "Espanso command alias registered successfully"
+        else
+            print_warning "Failed to register espanso command alias, but continuing..."
         fi
         
         print_success "Espanso AppImage installed successfully"
@@ -71,13 +67,13 @@ install_espanso_appimage() {
 register_espanso_service() {
     print_status "Registering espanso service..."
     
-    # Check if espanso is available
+    # Check if espanso is available (after env-path register)
     if command -v espanso >/dev/null 2>&1; then
-        # Register espanso service
+        # Register espanso as a systemd service (official method)
         if espanso service register; then
             print_success "Espanso service registered successfully"
             
-            # Start espanso
+            # Start espanso (official method)
             print_status "Starting espanso..."
             if espanso start; then
                 print_success "Espanso started successfully"
@@ -91,7 +87,8 @@ register_espanso_service() {
             return 1
         fi
     else
-        print_error "Espanso not found in PATH"
+        print_error "Espanso not found in PATH. The env-path register may have failed."
+        print_warning "You may need to manually run: sudo ~/opt/Espanso.AppImage env-path register"
         return 1
     fi
 }
@@ -131,8 +128,8 @@ show_usage() {
     echo "  • Faster installation"
     echo "  • Self-contained"
     echo
-    echo "The AppImage will be installed to: ~/.local/bin/espanso.AppImage"
-    echo "A symlink will be created at: ~/.local/bin/espanso"
+    echo "The AppImage will be installed to: ~/opt/Espanso.AppImage"
+    echo "The espanso command will be available system-wide"
     echo
 }
 
