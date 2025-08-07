@@ -733,6 +733,13 @@ if command -v zsh >/dev/null 2>&1; then
         # Set zsh as default shell if not already set
         if [[ "$SHELL" != "/bin/zsh" ]]; then
             print_status "Setting zsh as default shell..."
+            
+            # Add zsh to /etc/shells if it's not already there
+            if ! grep -q "/bin/zsh" /etc/shells; then
+                print_status "Adding zsh to /etc/shells..."
+                echo "/bin/zsh" | sudo tee -a /etc/shells > /dev/null
+            fi
+            
             if chsh -s /bin/zsh; then
                 print_success "Zsh set as default shell"
                 print_warning "You may need to log out and log back in for the change to take effect"
@@ -763,10 +770,15 @@ clone_and_build \
 }
 
 print_status "Applying dotfiles with stow..."
-cd "$stow_dir" || {
-    print_error "Failed to change to stow directory"
+if [[ -d "$stow_dir" ]]; then
+    cd "$stow_dir" || {
+        print_error "Failed to change to stow directory"
+        print_warning "Continuing with remaining installations..."
+    }
+else
+    print_error "Stow directory not found: $stow_dir"
     print_warning "Continuing with remaining installations..."
-}
+fi
 
 # Create config directory if it doesn't exist
 mkdir -p "$config"
