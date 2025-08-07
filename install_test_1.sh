@@ -735,9 +735,15 @@ if command -v zsh >/dev/null 2>&1; then
             print_status "Setting zsh as default shell..."
             
             # Add zsh to /etc/shells if it's not already there
-            if ! grep -q "/bin/zsh" /etc/shells; then
+            if ! grep -q "/bin/zsh" /etc/shells 2>/dev/null; then
                 print_status "Adding zsh to /etc/shells..."
                 echo "/bin/zsh" | sudo tee -a /etc/shells > /dev/null
+            fi
+            
+            # Also check for zsh in other common locations
+            if ! grep -q "zsh" /etc/shells 2>/dev/null; then
+                print_status "Adding zsh to /etc/shells (alternative method)..."
+                echo "zsh" | sudo tee -a /etc/shells > /dev/null
             fi
             
             if chsh -s /bin/zsh; then
@@ -775,29 +781,31 @@ if [[ -d "$stow_dir" ]]; then
         print_error "Failed to change to stow directory"
         print_warning "Continuing with remaining installations..."
     }
+    
+    # Create config directory if it doesn't exist
+    mkdir -p "$config"
+    
+    # Apply stow configuration with adopt flag to handle conflicts
+    print_status "Applying dotfiles with stow (adopting existing files)..."
+    stow . --adopt || {
+        print_warning "Stow failed with --adopt, trying without..."
+        stow . || {
+            print_error "Failed to apply dotfiles with stow"
+            print_warning "You may need to manually resolve conflicts in your dotfiles"
+            print_warning "Continuing with remaining installations..."
+        }
+    }
+    
+    print_success "Dotfiles applied successfully."
+    
+    # Return to original directory
+    cd - > /dev/null
 else
     print_error "Stow directory not found: $stow_dir"
     print_warning "Continuing with remaining installations..."
 fi
 
-# Create config directory if it doesn't exist
-mkdir -p "$config"
 
-# Apply stow configuration with adopt flag to handle conflicts
-print_status "Applying dotfiles with stow (adopting existing files)..."
-stow . --adopt || {
-    print_warning "Stow failed with --adopt, trying without..."
-    stow . || {
-        print_error "Failed to apply dotfiles with stow"
-        print_warning "You may need to manually resolve conflicts in your dotfiles"
-        print_warning "Continuing with remaining installations..."
-    }
-}
-
-print_success "Dotfiles applied successfully."
-
-# Return to original directory
-cd - > /dev/null
 
 # Install Cargo applications (optional)
 print_status "\n=== CARGO APPLICATIONS INSTALLATION ==="
