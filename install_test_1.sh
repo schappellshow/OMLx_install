@@ -734,23 +734,27 @@ if command -v zsh >/dev/null 2>&1; then
         if [[ "$SHELL" != "/bin/zsh" ]]; then
             print_status "Setting zsh as default shell..."
             
-            # Add zsh to /etc/shells if it's not already there
-            if ! grep -q "/bin/zsh" /etc/shells 2>/dev/null; then
+            # Check if zsh is in /etc/shells and add it if needed
+            print_status "Checking zsh in /etc/shells..."
+            if ! grep -q "/usr/bin/zsh" /etc/shells 2>/dev/null && ! grep -q "/bin/zsh" /etc/shells 2>/dev/null; then
                 print_status "Adding zsh to /etc/shells..."
-                echo "/bin/zsh" | sudo tee -a /etc/shells > /dev/null
-            fi
-            
-            # Also check for zsh in other common locations
-            if ! grep -q "zsh" /etc/shells 2>/dev/null; then
-                print_status "Adding zsh to /etc/shells (alternative method)..."
-                echo "zsh" | sudo tee -a /etc/shells > /dev/null
-            fi
-            
-            if chsh -s /bin/zsh; then
-                print_success "Zsh set as default shell"
-                print_warning "You may need to log out and log back in for the change to take effect"
+                echo "/usr/bin/zsh" | sudo tee -a /etc/shells > /dev/null
             else
-                print_warning "Failed to set zsh as default shell, you can do this manually later"
+                print_success "Zsh is already in /etc/shells"
+            fi
+            
+            # Get the actual zsh path
+            ZSH_PATH=$(which zsh)
+            if [[ -n "$ZSH_PATH" ]]; then
+                print_status "Using zsh at: $ZSH_PATH"
+                if chsh -s "$ZSH_PATH"; then
+                    print_success "Zsh set as default shell"
+                    print_warning "You may need to log out and log back in for the change to take effect"
+                else
+                    print_warning "Failed to set zsh as default shell, you can do this manually later"
+                fi
+            else
+                print_warning "Could not find zsh path, skipping default shell change"
             fi
         else
             print_success "Zsh is already the default shell"
