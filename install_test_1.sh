@@ -791,9 +791,14 @@ if [[ -d "$stow_dir" ]]; then
     
     # Apply stow configuration with adopt flag to handle conflicts
     print_status "Applying dotfiles with stow (adopting existing files)..."
-    stow . --adopt || {
+    
+    # For flat stow structure, we need to be more careful
+    print_status "Using flat stow structure..."
+    
+    # Try to stow with explicit target and directory
+    stow --target="$HOME" --dir="$stow_dir" --adopt . || {
         print_warning "Stow failed with --adopt, trying without..."
-        stow . || {
+        stow --target="$HOME" --dir="$stow_dir" . || {
             print_error "Failed to apply dotfiles with stow"
             print_warning "You may need to manually resolve conflicts in your dotfiles"
             print_warning "Continuing with remaining installations..."
