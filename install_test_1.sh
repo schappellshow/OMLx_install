@@ -759,13 +759,13 @@ clone_and_build \
     "$stow_dir" \
     "" || {
     print_error "Failed to clone dotfiles repository"
-    exit 1
+    print_warning "Continuing with remaining installations..."
 }
 
 print_status "Applying dotfiles with stow..."
 cd "$stow_dir" || {
     print_error "Failed to change to stow directory"
-    exit 1
+    print_warning "Continuing with remaining installations..."
 }
 
 # Create config directory if it doesn't exist
@@ -778,7 +778,7 @@ stow . --adopt || {
     stow . || {
         print_error "Failed to apply dotfiles with stow"
         print_warning "You may need to manually resolve conflicts in your dotfiles"
-        exit 1
+        print_warning "Continuing with remaining installations..."
     }
 }
 
