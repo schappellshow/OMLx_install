@@ -766,51 +766,56 @@ else
     print_error "Zsh is not available, skipping Oh My Zsh installation"
 fi
 
-# Setup Dotfiles
+# Setup Dotfiles (AFTER Oh My Zsh so stow can replace the default .zshrc)
 print_status "Setting up dotfiles..."
 
-# Clone dotfiles repository safely
-clone_and_build \
-    "$dotfiles" \
-    "dotfiles" \
-    "$stow_dir" \
-    "" || {
-    print_error "Failed to clone dotfiles repository"
-    print_warning "Continuing with remaining installations..."
-}
-
-print_status "Applying dotfiles with stow..."
+# Clone dotfiles repository directly to ~/stow
+print_status "Cloning dotfiles repository to $stow_dir..."
 if [[ -d "$stow_dir" ]]; then
-    cd "$stow_dir" || {
-        print_error "Failed to change to stow directory"
-        print_warning "Continuing with remaining installations..."
-    }
+    print_status "Removing existing stow directory..."
+    rm -rf "$stow_dir"
+fi
+
+if git clone "$dotfiles" "$stow_dir"; then
+    print_success "Successfully cloned dotfiles to $stow_dir"
     
-    # Create config directory if it doesn't exist
-    mkdir -p "$config"
-    
-    # Apply stow configuration with adopt flag to handle conflicts
-    print_status "Applying dotfiles with stow (adopting existing files)..."
-    
-    # For flat stow structure, we need to be more careful
-    print_status "Using flat stow structure..."
-    
-    # Try to stow with explicit target and directory
-    stow --target="$HOME" --dir="$stow_dir" --adopt . || {
-        print_warning "Stow failed with --adopt, trying without..."
-        stow --target="$HOME" --dir="$stow_dir" . || {
-            print_error "Failed to apply dotfiles with stow"
-            print_warning "You may need to manually resolve conflicts in your dotfiles"
+    # Apply stow configuration
+    print_status "Applying dotfiles with stow..."
+    if [[ -d "$stow_dir" ]]; then
+        cd "$stow_dir" || {
+            print_error "Failed to change to stow directory"
             print_warning "Continuing with remaining installations..."
         }
-    }
-    
-    print_success "Dotfiles applied successfully."
-    
-    # Return to original directory
-    cd - > /dev/null
+        
+        # Create config directory if it doesn't exist
+        mkdir -p "$config"
+        
+        # Apply stow configuration with adopt flag to handle conflicts
+        print_status "Applying dotfiles with stow (adopting existing files)..."
+        
+        # For flat stow structure, we need to be more careful
+        print_status "Using flat stow structure..."
+        
+        # Try to stow with explicit target and directory
+        stow --target="$HOME" --dir="$stow_dir" --adopt . || {
+            print_warning "Stow failed with --adopt, trying without..."
+            stow --target="$HOME" --dir="$stow_dir" . || {
+                print_error "Failed to apply dotfiles with stow"
+                print_warning "You may need to manually resolve conflicts in your dotfiles"
+                print_warning "Continuing with remaining installations..."
+            }
+        }
+        
+        print_success "Dotfiles applied successfully."
+        
+        # Return to original directory
+        cd - > /dev/null
+    else
+        print_error "Stow directory not found: $stow_dir"
+        print_warning "Continuing with remaining installations..."
+    fi
 else
-    print_error "Stow directory not found: $stow_dir"
+    print_error "Failed to clone dotfiles repository"
     print_warning "Continuing with remaining installations..."
 fi
 
