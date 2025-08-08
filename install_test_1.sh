@@ -197,7 +197,8 @@ curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh 
 
 print_success "Zoxide installation completed"
 
-# Install individual RPM packages
+# Install individual RPM packages (Warp, Mailspring, PDF Studio Viewer)
+# Note: Proton Pass and Proton VPN are now available in OpenMandriva repositories
 print_status "Installing individual RPM packages..."
 
 # Function to validate downloaded file
@@ -349,33 +350,6 @@ else
     print_warning "Continuing with remaining installations..."
 fi
 
-# Install Proton Pass
-print_status "Installing Proton Pass..."
-PROTON_PASS_FILE="/tmp/proton-pass.rpm"
-
-print_status "Downloading Proton Pass RPM..."
-if curl -L "https://proton.me/download/PassDesktop/linux/x64/ProtonPass.rpm" -o "$PROTON_PASS_FILE" && validate_download "$PROTON_PASS_FILE" 1000000; then
-    # Proton Pass dependencies are now handled by packages.txt installation
-    print_status "Installing Proton Pass..."
-    
-    # Try multiple installation methods
-    if sudo dnf install -y "$PROTON_PASS_FILE"; then
-        print_success "Proton Pass installed successfully with DNF"
-        verify_repository_integration "proton"
-    elif sudo rpm -ivh --nodeps "$PROTON_PASS_FILE"; then
-        print_success "Proton Pass installed with RPM (dependencies may need manual installation)"
-        print_warning "You may need to install missing dependencies manually"
-    else
-        print_error "Failed to install Proton Pass"
-        print_warning "Continuing with remaining installations..."
-    fi
-    
-    rm -f "$PROTON_PASS_FILE"
-else
-    print_error "Failed to download Proton Pass"
-    print_warning "Continuing with remaining installations..."
-fi
-
 # Install PDF Studio Viewer (shell script installer)
 print_status "Installing PDF Studio Viewer..."
 PDF_STUDIO_FILE="/tmp/PDFStudioViewer_linux64.sh"
@@ -406,8 +380,6 @@ else
 fi
 
 print_success "Individual RPM packages installation completed"
-
-
 
 # Install Git-based projects
 print_status "Installing Git-based projects..."
