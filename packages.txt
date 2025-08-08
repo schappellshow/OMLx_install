@@ -82,7 +82,6 @@ gtk-vnc-common.x86_64
 guvcview.x86_64
 hddtemp.x86_64
 heifthumbnailer.x86_64
-httrack.x86_64
 inotify-tools.x86_64
 iproute2-tc.x86_64
 ipset.x86_64
@@ -280,7 +279,6 @@ lib64gtk4_1.x86_64
 lib64gtk4-layer-shell.x86_64
 lib64gtk-gir3.0.x86_64
 lib64gtk-gir4.0.x86_64
-lib64gtksourceview
 lib64gtksourceview-gir4.x86_64
 lib64gtk-vnc2.0_0.x86_64
 lib64gtk-vnc-gir2.0.x86_64
@@ -402,7 +400,6 @@ lib64KPim6SMTP.x86_64
 lib64krb5-devel.x86_64
 lib64kvazaar.x86_64
 lib64liveMedia107.x86_64
-lib64luajit
 lib64luv1.x86_64
 lib64lzma-devel.x86_64
 lib64lzo-devel.x86_64
@@ -463,7 +460,6 @@ lib64png-devel.x86_64
 lib64polkit1-devel.x86_64
 lib64polkitagent-gir1.0.x86_64
 lib64polkit-gir1.0.x86_64
-lib64polkit-qt5-core
 lib64poly2tri-c0.1_0.x86_64
 lib64poppler-glib.x86_64
 lib64portaudio2.x86_64
@@ -692,7 +688,6 @@ libcairo-script-interpreter2.x86_64
 libcrypto3.x86_64
 libcrystalhd-common.x86_64
 libcups2.x86_64
-libdbus
 libde265.x86_64
 libdex-devel.x86_64
 libdex.x86_64
@@ -733,7 +728,6 @@ libopenssl-devel.x86_64
 libpango1.0_0.x86_64
 libpangocairo1.0_0.x86_64
 libpangoft2_1.0_0.x86_64
-libpcre2
 libpcre2-devel.x86_64
 libpcre2-posix3.x86_64
 libpixman1_0.x86_64
@@ -778,7 +772,6 @@ luajit-mpack.x86_64
 luajit.x86_64
 lua.x86_64
 m4.x86_64
-mailspring.x86_64
 make.x86_64
 memtester.x86_64
 mercurial.x86_64
@@ -791,7 +784,6 @@ netcat-gnu.x86_64
 netcf.x86_64
 networkmanager-openvpn-gtk.x86_64
 nftables.x86_64
-nheko.x86_64
 ninja.x86_64
 nmap.x86_64
 nodejs.x86_64
@@ -822,7 +814,6 @@ plasma6-firewall.x86_64
 plasma6-grantleetheme.x86_64
 plasma6-kde-gtk-config.x86_64
 plasma6-kidentitymanagement.x86_64
-plasma6-kleopatra.x86_64
 plasma6-kmailtransport.x86_64
 plasma6-kmime.x86_64
 plasma6-kpimtextedit.x86_64
@@ -833,9 +824,6 @@ plasma6-mimetreeparser.x86_64
 poppler.x86_64
 postfix-config-standalone.x86_64
 postfix.x86_64
-proton-pass.x86_64
-proton-vpn-gtk-app.x86_64
-proton-vpn-local-agent.x86_64
 python39.x86_64
 python-aiohappyeyeballs.noarch
 python-aiohttp.x86_64
@@ -876,10 +864,6 @@ python-pip.noarch
 python-pkg-resources.noarch
 python-ply.noarch
 python-propcache.x86_64
-python-proton-core.noarch
-python-proton-vpn-api-core.noarch
-python-proton-vpn-local-agent.x86_64
-python-proton-vpn-network-manager.noarch
 python-pybeam.noarch
 python-pylibacl.x86_64
 python-pynacl.x86_64
