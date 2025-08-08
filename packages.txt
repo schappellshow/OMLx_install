@@ -843,7 +843,6 @@ python-flit-core.noarch
 python-frozenlist.x86_64
 python-fuse.x86_64
 python-gi.x86_64
-python-gnupg.noarch
 python-gobject3.x86_64
 python-idna.noarch
 python-importlib-metadata.noarch
