@@ -796,47 +796,6 @@ if command -v zsh >/dev/null 2>&1; then
     if sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended; then
         print_success "Oh My Zsh installed successfully"
         
-        # Install additional zsh plugins
-        print_status "Installing additional zsh plugins..."
-        print_status "These plugins enhance your zsh experience with autocompletion and syntax highlighting"
-        
-        # Install zsh-autosuggestions plugin
-        print_status "Installing zsh-autosuggestions plugin..."
-        print_status "Provides fish-like autosuggestions based on command history"
-        if git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"; then
-            print_success "zsh-autosuggestions plugin installed successfully"
-        else
-            print_warning "Failed to install zsh-autosuggestions plugin, continuing..."
-        fi
-        
-        # Install zsh-syntax-highlighting plugin
-        print_status "Installing zsh-syntax-highlighting plugin..."
-        print_status "Provides fish-like syntax highlighting for zsh commands"
-        if git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"; then
-            print_success "zsh-syntax-highlighting plugin installed successfully"
-        else
-            print_warning "Failed to install zsh-syntax-highlighting plugin, continuing..."
-        fi
-        
-        print_status "Zsh plugins installation completed"
-        
-        # Verify plugin installation
-        print_status "Verifying zsh plugins installation..."
-        if [[ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]]; then
-            print_success "✓ zsh-autosuggestions plugin directory found"
-        else
-            print_warning "⚠ zsh-autosuggestions plugin directory not found"
-        fi
-        
-        if [[ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]]; then
-            print_success "✓ zsh-syntax-highlighting plugin directory found"
-        else
-            print_warning "⚠ zsh-syntax-highlighting plugin directory not found"
-        fi
-        
-        print_status "Note: These plugins are already configured in your .zshrc file"
-        print_status "They will be active after you log out and log back in, or restart your terminal"
-        
         # Set zsh as default shell if not already set
         if [[ "$SHELL" != "/bin/zsh" ]]; then
             print_status "Setting zsh as default shell..."
@@ -889,7 +848,8 @@ echo "  • ~/.config/kitty/ (will be replaced with your custom configs)"
 echo "  • ~/.config/micro/ (will be replaced with your custom configs)"
 echo "  • ~/.conky/ (will be replaced with your custom configs)"
 echo "  • ~/.local/share/espanso/ (will be replaced with your custom configs)"
-echo "  • ~/.oh-my-zsh/custom/ (will be replaced with your custom configs)"
+echo "  • ~/.oh-my-zsh/custom/aliases.zsh (will be replaced with your custom aliases)"
+echo "  • Note: ~/.oh-my-zsh/custom/plugins/ directory will be preserved for zsh plugins"
 echo ""
 
 read -p "Proceed with cleanup? This will remove existing configs. (y/N): " -r cleanup_confirm
@@ -936,6 +896,7 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
     print_status "Removing additional potential conflicts..."
     rm -rf ~/.conky
     rm -rf ~/.local/share/espanso
+    # Only remove specific aliases file, preserve plugins directory for zsh plugins
     rm -rf ~/.oh-my-zsh/custom/aliases.zsh
 
     print_status "Config cleanup completed. Now applying your custom dotfiles..."
@@ -994,7 +955,47 @@ else
     print_warning "Continuing with remaining installations..."
 fi
 
+# Install Zsh Plugins (AFTER dotfiles so stow doesn't remove them)
+print_status "\n=== ZSH PLUGINS INSTALLATION ==="
+print_status "Installing additional zsh plugins after dotfiles setup..."
+print_status "These plugins enhance your zsh experience with autocompletion and syntax highlighting"
 
+# Install zsh-autosuggestions plugin
+print_status "Installing zsh-autosuggestions plugin..."
+print_status "Provides fish-like autosuggestions based on command history"
+if git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"; then
+    print_success "zsh-autosuggestions plugin installed successfully"
+else
+    print_warning "Failed to install zsh-autosuggestions plugin, continuing..."
+fi
+
+# Install zsh-syntax-highlighting plugin
+print_status "Installing zsh-syntax-highlighting plugin..."
+print_status "Provides fish-like syntax highlighting for zsh commands"
+if git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"; then
+    print_success "zsh-syntax-highlighting plugin installed successfully"
+else
+    print_warning "Failed to install zsh-syntax-highlighting plugin, continuing..."
+fi
+
+print_status "Zsh plugins installation completed"
+
+# Verify plugin installation
+print_status "Verifying zsh plugins installation..."
+if [[ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]]; then
+    print_success "✓ zsh-autosuggestions plugin directory found"
+else
+    print_warning "⚠ zsh-autosuggestions plugin directory not found"
+fi
+
+if [[ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]]; then
+    print_success "✓ zsh-syntax-highlighting plugin directory found"
+else
+    print_warning "⚠ zsh-syntax-highlighting plugin directory not found"
+fi
+
+print_status "Note: These plugins are already configured in your .zshrc file"
+print_status "They will be active after you log out and log back in, or restart your terminal"
 
 # Install Cargo applications (optional)
 print_status "\n=== CARGO APPLICATIONS INSTALLATION ==="

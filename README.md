@@ -2,24 +2,74 @@
 Install script and setup for OM Lx ROME/ROCK
 
 Clone this repo to your system first.
+```bash
 git clone https://github.com/schappellshow/OMLx_install.git
-
 cd OMLx_install
+```
 
-Step 1: Generate a list of installed packages:
+## **📋 Installation Workflow**
 
-- For this step, we want to get a list of installed packages. We'll ultimately refine this list by removing any
-libraries/dependencies that will be automatically installed by the dnf package manager.
-- To start, run the command: dnf list installed >> packages.txt
-This will generate a list of installed packages and will create a file called packages.txt in your HOME directory
+### **Step 1: Generate Your Package List**
+Create a list of packages you want to install on your fresh system:
+```bash
+# Option A: Generate from current system (if you have one)
+dnf list installed > packages_original.txt
 
-Step 2: Refine the list of installed packages:
+# Option B: Create manually
+# Edit packages_original.txt and add packages you want, one per line
+# Example:
+# firefox
+# vim
+# git
+# python3-pip
+```
 
-- From here, we want to run the "analyze_packages.sh" script to compare your your packages.txt file to a list of packages from a clean OMLx-ROME install.
-This script will sort through both lists, and will remove any pacakages that are present in both lists.
-The result will be a file, packages_custom.txt that will contain only the packages and dependencies that you've installed.
+### **Step 2: Analyze and Clean Package List**
+Run the package analyzer to remove packages already in clean OMLx-ROME:
+```bash
+bash analyze_packages.sh
+```
 
-Look through this list of packages and remove any that you do not want to have in a fresh install.
+This script will:
+- **Compare** your `packages_original.txt` with `OM_clean_packages.txt`
+- **Remove duplicates** that are already in clean OMLx-ROME
+- **Generate** a clean `packages.txt` file ready for installation
+- **Show statistics** about how many packages were optimized out
 
-Step 3: 
+### **Step 3: Run the Installation Script**
+Install all packages and configure your system:
+```bash
+bash install_test_1.sh
+```
 
+This script will:
+- **Install packages** from the generated `packages.txt`
+- **Install flatpaks** from `flatpak.txt`
+- **Install additional applications** (Warp, Mailspring, etc.)
+- **Set up your dotfiles** via stow
+- **Configure zsh** with Oh My Zsh and plugins
+- **Install cargo applications** (optional)
+
+## **📁 File Structure**
+
+- **`packages_original.txt`** - Your original package list (create this)
+- **`OM_clean_packages.txt`** - Clean OMLx-ROME package list (provided)
+- **`packages.txt`** - Generated clean package list (output of analyzer)
+- **`flatpak.txt`** - Flatpak applications to install
+- **`install_test_1.sh`** - Main installation script
+- **`analyze_packages.sh`** - Package list analyzer
+
+## **🎯 Benefits of This Workflow**
+
+1. **🔄 No file renaming** - Clear, logical file names
+2. **⚡ Efficient installation** - Only installs what you actually need
+3. **🛡️ Avoids conflicts** - Removes packages already in clean install
+4. **📊 Clear visibility** - See exactly what will be installed
+5. **🚀 Ready to run** - Generated `packages.txt` works immediately with install script
+
+## **💡 Tips**
+
+- **Review** the generated `packages.txt` before running the install script
+- **Customize** `packages_original.txt` to include only packages you actually want
+- **Backup** your original package list if needed
+- **Test** on a fresh VM first if you're unsure about the process 
