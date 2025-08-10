@@ -31,6 +31,7 @@ dotfiles="https://github.com/schappellshow/stow.git"
 packages="./packages.txt"
 flatpaks="./flatpak.txt"
 stow_dir="$HOME/stow"
+script_dir="$(pwd)"
 
 print_status "Starting OpenMandriva installation script..."
 
@@ -741,6 +742,74 @@ fi
 # Setup Dotfiles (AFTER Oh My Zsh so stow can replace the default .zshrc)
 print_status "Setting up dotfiles..."
 
+# Clean up existing config files that would conflict with stow
+print_status "Cleaning up existing config files to prevent conflicts..."
+print_status "This ensures your custom dotfiles will be applied correctly..."
+print_status ""
+print_status "The following config files will be removed to prevent conflicts:"
+echo "  • ~/.zshrc (will be replaced with your custom version)"
+echo "  • ~/.config/espanso/ (will be replaced with your custom configs)"
+echo "  • ~/.config/fastfetch/ (will be replaced with your custom configs)"
+echo "  • ~/.config/ghostty/ (will be replaced with your custom configs)"
+echo "  • ~/.config/kitty/ (will be replaced with your custom configs)"
+echo "  • ~/.config/micro/ (will be replaced with your custom configs)"
+echo "  • ~/.conky/ (will be replaced with your custom configs)"
+echo "  • ~/.local/share/espanso/ (will be replaced with your custom configs)"
+echo "  • ~/.oh-my-zsh/custom/ (will be replaced with your custom configs)"
+echo ""
+
+read -p "Proceed with cleanup? This will remove existing configs. (y/N): " -r cleanup_confirm
+
+if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
+    # Offer backup option
+    read -p "Would you like to backup existing configs first? (y/N): " -r backup_confirm
+    
+    if [[ $backup_confirm =~ ^[Yy]$ ]]; then
+        backup_dir="$HOME/config_backup_$(date +%Y%m%d_%H%M%S)"
+        print_status "Creating backup in: $backup_dir"
+        mkdir -p "$backup_dir"
+        
+        # Backup existing configs
+        if [[ -f ~/.zshrc ]]; then cp ~/.zshrc "$backup_dir/"; fi
+        if [[ -d ~/.config/espanso ]]; then cp -r ~/.config/espanso "$backup_dir/"; fi
+        if [[ -d ~/.config/fastfetch ]]; then cp -r ~/.config/fastfetch "$backup_dir/"; fi
+        if [[ -d ~/.config/ghostty ]]; then cp -r ~/.config/ghostty "$backup_dir/"; fi
+        if [[ -d ~/.config/kitty ]]; then cp -r ~/.config/kitty "$backup_dir/"; fi
+        if [[ -d ~/.config/micro ]]; then cp -r ~/.config/micro "$backup_dir/"; fi
+        if [[ -d ~/.conky ]]; then cp -r ~/.conky "$backup_dir/"; fi
+        if [[ -d ~/.local/share/espanso ]]; then cp -r ~/.local/share/espanso "$backup_dir/"; fi
+        if [[ -d ~/.oh-my-zsh/custom ]]; then cp -r ~/.oh-my-zsh/custom "$backup_dir/"; fi
+        
+        print_success "Backup completed in: $backup_dir"
+    fi
+    
+    print_status "Proceeding with config cleanup..."
+    
+    # Remove conflicting dotfiles and configs
+    print_status "Removing conflicting .zshrc..."
+    rm -f ~/.zshrc
+
+    print_status "Removing conflicting espanso configs..."
+    rm -rf ~/.config/espanso
+
+    print_status "Removing other potentially conflicting configs..."
+    rm -rf ~/.config/fastfetch
+    rm -rf ~/.config/ghostty
+    rm -rf ~/.config/kitty
+    rm -rf ~/.config/micro
+
+    # Also clean up any other potential conflicts
+    print_status "Removing additional potential conflicts..."
+    rm -rf ~/.conky
+    rm -rf ~/.local/share/espanso
+    rm -rf ~/.oh-my-zsh/custom
+
+    print_status "Config cleanup completed. Now applying your custom dotfiles..."
+else
+    print_warning "Skipping config cleanup. Your dotfiles may not apply correctly due to conflicts."
+    print_status "Continuing with dotfiles installation..."
+fi
+
 # Clone dotfiles repository directly to ~/stow
 print_status "Cloning dotfiles repository to $stow_dir..."
 if [[ -d "$stow_dir" ]]; then
@@ -763,25 +832,25 @@ if git clone "$dotfiles" "$stow_dir"; then
         mkdir -p "$config"
         
         # Apply stow configuration with adopt flag to handle conflicts
-        print_status "Applying dotfiles with stow (adopting existing files)..."
+        print_status "Applying dotfiles with stow..."
         
-        # For flat stow structure, we need to be more careful
-        print_status "Using flat stow structure..."
+        # Since we've cleaned up conflicts, we can use a simpler stow command
+        print_status "Applying all stow packages..."
         
-        # Try to stow with explicit target and directory
-        stow --target="$HOME" --dir="$stow_dir" --adopt . || {
-            print_warning "Stow failed with --adopt, trying without..."
-            stow --target="$HOME" --dir="$stow_dir" . || {
-                print_error "Failed to apply dotfiles with stow"
-                print_warning "You may need to manually resolve conflicts in your dotfiles"
-                print_warning "Continuing with remaining installations..."
-            }
+        # Try to stow all packages
+        stow . || {
+            print_error "Failed to apply dotfiles with stow"
+            print_warning "You may need to manually resolve conflicts in your dotfiles"
+            print_warning "Continuing with remaining installations..."
         }
         
         print_success "Dotfiles applied successfully."
         
         # Return to original directory
-        cd - > /dev/null
+        cd "$script_dir" || {
+            print_error "Failed to return to script directory"
+            print_warning "Continuing with remaining installations..."
+        }
     else
         print_error "Stow directory not found: $stow_dir"
         print_warning "Continuing with remaining installations..."
