@@ -184,6 +184,53 @@ if [[ -f "$HOME/ROME.knsv" ]]; then
     }
     
     print_success "Konsave profile imported and applied"
+
+# Install pipx for Python package management (recommended for CLI tools)
+print_status "Installing pipx for Python package management..."
+python3 -m pip install --user pipx || {
+    print_warning "Failed to install pipx, will use pip directly for trash-cli"
+}
+
+# Ensure pipx is in PATH
+if command -v pipx >/dev/null 2>&1; then
+    print_success "pipx installed successfully"
+    # Add pipx to PATH if not already there
+    if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+        export PATH="$HOME/.local/bin:$PATH"
+        print_status "Added pipx to PATH"
+    fi
+else
+    print_warning "pipx not available, will use pip directly"
+fi
+
+# Install trash-cli for safe file deletion
+print_status "Installing trash-cli..."
+print_status "This provides safe file deletion by moving files to trash instead of permanent deletion"
+
+# Try pipx first (recommended method)
+if command -v pipx >/dev/null 2>&1; then
+    print_status "Using pipx to install trash-cli..."
+    pipx install trash-cli || {
+        print_warning "pipx installation failed, trying pip..."
+        python3 -m pip install --user trash-cli || {
+            print_error "Failed to install trash-cli, continuing..."
+        }
+    }
+else
+    print_status "pipx not available, using pip to install trash-cli..."
+    python3 -m pip install --user trash-cli || {
+        print_error "Failed to install trash-cli, continuing..."
+    }
+fi
+
+if command -v trash >/dev/null 2>&1; then
+    print_success "trash-cli installed successfully"
+    print_status "You can now use 'trash' command to safely delete files"
+    print_status "Tip: Add 'alias rm=\"trash\"' to your .zshrc to make 'rm' use trash by default"
+else
+    print_warning "trash-cli installation may have failed"
+fi
+
 else
     print_error "ROME.knsv not found in home directory, skipping profile import"
 fi
