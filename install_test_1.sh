@@ -25,6 +25,19 @@ print_warning() {
     echo -e "\033[1;33m[WARNING]\033[0m $1"
 }
 
+# Function to refresh sudo timeout
+refresh_sudo() {
+    if ! sudo -n true 2>/dev/null; then
+        print_status "Refreshing sudo timeout..."
+        sudo -v || {
+            print_error "Failed to refresh sudo timeout"
+            print_warning "You may be prompted for password again"
+        }
+    fi
+}
+
+# Function to print status messages
+
 # Variables
 config="$HOME/.config"
 dotfiles="https://github.com/schappellshow/stow.git"
@@ -34,6 +47,22 @@ stow_dir="$HOME/stow"
 script_dir="$(pwd)"
 
 print_status "Starting OpenMandriva installation script..."
+print_status "This script will install packages, applications, and configure your system"
+print_status "💡 TIP: You only need to enter your password once at the beginning!"
+print_status "The script will cache your sudo password for the entire installation session"
+print_status ""
+
+# Cache sudo password for the session to avoid repeated prompts
+print_status "Caching sudo password for this session..."
+print_status "You will only need to enter your password once"
+if sudo -v; then
+    print_success "Sudo password cached successfully"
+    print_status "All subsequent sudo commands will run without password prompts"
+else
+    print_error "Failed to cache sudo password"
+    print_warning "You may be prompted for password multiple times during installation"
+fi
+print_status ""
 
 # Check if required files exist
 print_status "Checking for required files..."
@@ -90,8 +119,14 @@ fi
 
 print_success "Build tools and core dependencies installed."
 
-# Install native packages via dnf
-print_status "Installing native packages from $packages..."
+# Install native packages
+print_status "\n=== NATIVE PACKAGES INSTALLATION ==="
+print_status "Installing packages from packages.txt..."
+
+# Refresh sudo timeout before package installation
+refresh_sudo
+
+# Check if packages.txt exists
 if [[ -s "$packages" ]]; then
     # First, try to install all packages at once for efficiency
     print_status "Attempting bulk package installation..."
@@ -142,6 +177,10 @@ print_success "Native packages installation completed."
 
 # Install Flatpaks
 print_status "Installing Flatpak applications from $flatpaks..."
+
+# Refresh sudo timeout before flatpak installation
+refresh_sudo
+
 if [[ -s "$flatpaks" ]]; then
     while IFS= read -r flatpak || [[ -n "$flatpak" ]]; do
         # Skip empty lines and comments
@@ -246,8 +285,15 @@ curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh 
 print_success "Zoxide installation completed"
 
 # Install individual RPM packages (Warp, Mailspring, PDF Studio Viewer)
-# Note: Proton Pass and Proton VPN are now available in OpenMandriva repositories
+print_status "\n=== INDIVIDUAL RPM PACKAGES INSTALLATION ==="
 print_status "Installing individual RPM packages..."
+
+# Refresh sudo timeout before RPM installation
+refresh_sudo
+
+# Create temporary directory for downloads
+TEMP_DIR="/tmp/rpm_downloads_$(date +%s)"
+mkdir -p "$TEMP_DIR"
 
 # Function to validate downloaded file
 validate_download() {
@@ -331,7 +377,7 @@ verify_repository_integration() {
 
 # Install Warp terminal
 print_status "Installing Warp terminal..."
-WARP_RPM_FILE="/tmp/warp-terminal.rpm"
+WARP_RPM_FILE="$TEMP_DIR/warp-terminal.rpm"
 
 # Try multiple download methods for Warp
 print_status "Downloading Warp terminal RPM..."
@@ -368,7 +414,7 @@ fi
 
 # Install Mailspring
 print_status "Installing Mailspring..."
-MAILSPRING_FILE="/tmp/mailspring.rpm"
+MAILSPRING_FILE="$TEMP_DIR/mailspring.rpm"
 
 print_status "Downloading Mailspring RPM..."
 if curl -L "https://updates.getmailspring.com/download?platform=linuxRpm" -o "$MAILSPRING_FILE" && validate_download "$MAILSPRING_FILE" 1000000; then
@@ -400,7 +446,7 @@ fi
 
 # Install PDF Studio Viewer (shell script installer)
 print_status "Installing PDF Studio Viewer..."
-PDF_STUDIO_FILE="/tmp/PDFStudioViewer_linux64.sh"
+PDF_STUDIO_FILE="$TEMP_DIR/PDFStudioViewer_linux64.sh"
 
 print_status "Downloading PDF Studio Viewer installer..."
 if curl -L "https://download.qoppa.com/pdfstudioviewer/PDFStudioViewer_linux64.sh" -o "$PDF_STUDIO_FILE" && validate_download "$PDF_STUDIO_FILE" 1000000; then
