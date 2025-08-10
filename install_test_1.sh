@@ -802,7 +802,7 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
     print_status "Removing additional potential conflicts..."
     rm -rf ~/.conky
     rm -rf ~/.local/share/espanso
-    rm -rf ~/.oh-my-zsh/custom
+    rm -rf ~/.oh-my-zsh/custom/aliases.zsh
 
     print_status "Config cleanup completed. Now applying your custom dotfiles..."
 else
