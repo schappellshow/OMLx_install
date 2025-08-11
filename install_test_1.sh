@@ -864,15 +864,15 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
         mkdir -p "$backup_dir"
         
         # Backup existing configs
-        if [[ -f ~/.zshrc ]]; then cp ~/.zshrc "$backup_dir/"; fi
-        if [[ -d ~/.config/espanso ]]; then cp -r ~/.config/espanso "$backup_dir/"; fi
-        if [[ -d ~/.config/fastfetch ]]; then cp -r ~/.config/fastfetch "$backup_dir/"; fi
-        if [[ -d ~/.config/ghostty ]]; then cp -r ~/.config/ghostty "$backup_dir/"; fi
-        if [[ -d ~/.config/kitty ]]; then cp -r ~/.config/kitty "$backup_dir/"; fi
-        if [[ -d ~/.config/micro ]]; then cp -r ~/.config/micro "$backup_dir/"; fi
-        if [[ -d ~/.conky ]]; then cp -r ~/.conky "$backup_dir/"; fi
-        if [[ -d ~/.local/share/espanso ]]; then cp -r ~/.local/share/espanso "$backup_dir/"; fi
-        if [[ -d ~/.oh-my-zsh/custom ]]; then cp -r ~/.oh-my-zsh/custom "$backup_dir/"; fi
+        if [[ -f "$HOME/.zshrc" ]]; then cp "$HOME/.zshrc" "$backup_dir/"; fi
+        if [[ -d "$HOME/.config/espanso" ]]; then cp -r "$HOME/.config/espanso" "$backup_dir/"; fi
+        if [[ -d "$HOME/.config/fastfetch" ]]; then cp -r "$HOME/.config/fastfetch" "$backup_dir/"; fi
+        if [[ -d "$HOME/.config/ghostty" ]]; then cp -r "$HOME/.config/ghostty" "$backup_dir/"; fi
+        if [[ -d "$HOME/.config/kitty" ]]; then cp -r "$HOME/.config/kitty" "$backup_dir/"; fi
+        if [[ -d "$HOME/.config/micro" ]]; then cp -r "$HOME/.config/micro" "$backup_dir/"; fi
+        if [[ -d "$HOME/.conky" ]]; then cp -r "$HOME/.conky" "$backup_dir/"; fi
+        if [[ -d "$HOME/.local/share/espanso" ]]; then cp -r "$HOME/.local/share/espanso" "$backup_dir/"; fi
+        if [[ -d "$HOME/.oh-my-zsh/custom" ]]; then cp -r "$HOME/.oh-my-zsh/custom" "$backup_dir/"; fi
         
         print_success "Backup completed in: $backup_dir"
     fi
@@ -881,23 +881,23 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
     
     # Remove conflicting dotfiles and configs
     print_status "Removing conflicting .zshrc..."
-    rm -f ~/.zshrc
+    rm -f "$HOME/.zshrc"
 
     print_status "Removing conflicting espanso configs..."
-    rm -rf ~/.config/espanso
+    rm -rf "$HOME/.config/espanso"
 
     print_status "Removing other potentially conflicting configs..."
-    rm -rf ~/.config/fastfetch
-    rm -rf ~/.config/ghostty
-    rm -rf ~/.config/kitty
-    rm -rf ~/.config/micro
+    rm -rf "$HOME/.config/fastfetch"
+    rm -rf "$HOME/.config/ghostty"
+    rm -rf "$HOME/.config/kitty"
+    rm -rf "$HOME/.config/micro"
 
     # Also clean up any other potential conflicts
     print_status "Removing additional potential conflicts..."
-    rm -rf ~/.conky
-    rm -rf ~/.local/share/espanso
+    rm -rf "$HOME/.conky"
+    rm -rf "$HOME/.local/share/espanso"
     # Only remove specific aliases file, preserve plugins directory for zsh plugins
-    rm -rf ~/.oh-my-zsh/custom/aliases.zsh
+    rm -rf "$HOME/.oh-my-zsh/custom/aliases.zsh"
 
     print_status "Config cleanup completed. Now applying your custom dotfiles..."
 else
@@ -905,7 +905,7 @@ else
     print_status "Continuing with dotfiles installation..."
 fi
 
-# Clone dotfiles repository directly to ~/stow
+# Clone dotfiles repository directly to $HOME/stow
 print_status "Cloning dotfiles repository to $stow_dir..."
 if [[ -d "$stow_dir" ]]; then
     print_status "Removing existing stow directory..."
@@ -960,10 +960,18 @@ print_status "\n=== ZSH PLUGINS INSTALLATION ==="
 print_status "Installing additional zsh plugins after dotfiles setup..."
 print_status "These plugins enhance your zsh experience with autocompletion and syntax highlighting"
 
+# Set ZSH_CUSTOM path explicitly to avoid tilde expansion issues
+ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
+print_status "Zsh custom directory: $ZSH_CUSTOM"
+
+# Ensure the plugins directory exists
+print_status "Creating plugins directory if it doesn't exist..."
+mkdir -p "$ZSH_CUSTOM/plugins"
+
 # Install zsh-autosuggestions plugin
 print_status "Installing zsh-autosuggestions plugin..."
 print_status "Provides fish-like autosuggestions based on command history"
-if git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"; then
+if git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"; then
     print_success "zsh-autosuggestions plugin installed successfully"
 else
     print_warning "Failed to install zsh-autosuggestions plugin, continuing..."
@@ -972,7 +980,7 @@ fi
 # Install zsh-syntax-highlighting plugin
 print_status "Installing zsh-syntax-highlighting plugin..."
 print_status "Provides fish-like syntax highlighting for zsh commands"
-if git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"; then
+if git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"; then
     print_success "zsh-syntax-highlighting plugin installed successfully"
 else
     print_warning "Failed to install zsh-syntax-highlighting plugin, continuing..."
@@ -982,13 +990,13 @@ print_status "Zsh plugins installation completed"
 
 # Verify plugin installation
 print_status "Verifying zsh plugins installation..."
-if [[ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]]; then
+if [[ -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]]; then
     print_success "✓ zsh-autosuggestions plugin directory found"
 else
     print_warning "⚠ zsh-autosuggestions plugin directory not found"
 fi
 
-if [[ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]]; then
+if [[ -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]]; then
     print_success "✓ zsh-syntax-highlighting plugin directory found"
 else
     print_warning "⚠ zsh-syntax-highlighting plugin directory not found"
