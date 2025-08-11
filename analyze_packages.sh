@@ -104,7 +104,7 @@ print_section "Creating Clean Package List for Installation"
     echo "# Source files:"
     echo "#   Original list:    packages_original.txt"
     echo "#   Clean install:    OM_clean_packages.txt"
-    echo "#   Output:           packages.txt (ready for install_test_1.sh)"
+    echo "#   Output:           packages.txt (ready for OMLx_install.sh)"
     echo ""
     if [[ -s /tmp/custom_packages.txt ]]; then
         sort /tmp/custom_packages.txt
@@ -124,7 +124,7 @@ if [[ $custom_count -gt 0 ]]; then
     reduction_percent=$(( (common_count * 100) / original_count ))
     echo -e "\n${CYAN}Optimization: $common_count packages excluded (already in clean install)${NC}"
     echo -e "${CYAN}Efficiency: ~${reduction_percent}% reduction in package list${NC}"
-    echo -e "${GREEN}Ready to run: install_test_1.sh will use this packages.txt file${NC}"
+    echo -e "${GREEN}Ready to run: OMLx_install.sh will use this packages.txt file${NC}"
 else
     echo -e "\n${YELLOW}All your packages are already in the clean install!${NC}"
     echo -e "${YELLOW}No installation needed.${NC}"
@@ -135,7 +135,7 @@ rm -f /tmp/original_packages_clean.txt /tmp/clean_packages_clean.txt /tmp/custom
 
 if [[ $custom_count -gt 0 ]]; then
     echo -e "\n${GREEN}✅ packages.txt created successfully!${NC}"
-    echo -e "${GREEN}🚀 You can now run: bash install_test_1.sh${NC}"
+    echo -e "${GREEN}🚀 You can now run: bash OMLx_install.sh${NC}"
 else
     echo -e "\n${YELLOW}⚠ No packages.txt created (nothing to install)${NC}"
 fi

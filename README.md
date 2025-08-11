@@ -39,7 +39,7 @@ This script will:
 ### **Step 3: Run the Installation Script**
 Install all packages and configure your system:
 ```bash
-bash install_test_1.sh
+bash OMLx_install.sh
 ```
 
 This script will:
@@ -56,7 +56,7 @@ This script will:
 - **`OM_clean_packages.txt`** - Clean OMLx-ROME package list (provided)
 - **`packages.txt`** - Generated clean package list (output of analyzer)
 - **`flatpak.txt`** - Flatpak applications to install
-- **`install_test_1.sh`** - Main installation script
+- **`OMLx_install.sh`** - Main installation script
 - **`analyze_packages.sh`** - Package list analyzer
 
 ## **🎯 Benefits of This Workflow**
