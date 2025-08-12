@@ -1,0 +1,5 @@
+# Ignore package list files
+packages.txt
+packages.txt.bak
+packages.txt.backup
+packages1.txt
