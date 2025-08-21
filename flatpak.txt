@@ -2,7 +2,6 @@ app.zen_browser.zen
 ch.protonmail.protonmail-bridge
 com.discordapp.Discord
 com.github.tchx84.Flatseal
-com.protonvpn.www
 com.slack.Slack
 com.spotify.Client
 io.github.flattool.Warehouse
