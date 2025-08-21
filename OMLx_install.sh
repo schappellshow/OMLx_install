@@ -182,7 +182,7 @@ print_status "This will enable the cooker-x86_64 repository and install proton-v
 # Refresh sudo timeout before Proton VPN installation
 refresh_sudo
 
-if sudo dnf in --enablerepo=cooker-x86_64 proton-vpn-gtk-app --refresh; then
+if sudo dnf in -y --enablerepo=cooker-x86_64 proton-vpn-gtk-app --refresh; then
     print_success "Proton VPN installed successfully from Cooker repository"
     print_status "Proton VPN is now available in your applications menu"
 else
