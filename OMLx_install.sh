@@ -883,6 +883,7 @@ print_status "This ensures your custom dotfiles will be applied correctly..."
 print_status ""
 print_status "The following config files will be removed to prevent conflicts:"
 echo "  • ~/.zshrc (will be replaced with your custom version)"
+echo "  • ~/.bashrc (will be replaced with your custom version from stow)"
 echo "  • ~/.config/espanso/ (will be replaced with your custom configs)"
 echo "  • ~/.config/fastfetch/ (will be replaced with your custom configs)"
 echo "  • ~/.config/ghostty/ (will be replaced with your custom configs)"
@@ -907,6 +908,7 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
         
         # Backup existing configs
         if [[ -f "$HOME/.zshrc" ]]; then cp "$HOME/.zshrc" "$backup_dir/"; fi
+        if [[ -f "$HOME/.bashrc" ]]; then cp "$HOME/.bashrc" "$backup_dir/"; fi
         if [[ -d "$HOME/.config/espanso" ]]; then cp -r "$HOME/.config/espanso" "$backup_dir/"; fi
         if [[ -d "$HOME/.config/fastfetch" ]]; then cp -r "$HOME/.config/fastfetch" "$backup_dir/"; fi
         if [[ -d "$HOME/.config/ghostty" ]]; then cp -r "$HOME/.config/ghostty" "$backup_dir/"; fi
@@ -924,6 +926,9 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
     # Remove conflicting dotfiles and configs
     print_status "Removing conflicting .zshrc..."
     rm -f "$HOME/.zshrc"
+    
+    print_status "Removing conflicting .bashrc..."
+    rm -f "$HOME/.bashrc"
 
     print_status "Removing conflicting espanso configs..."
     rm -rf "$HOME/.config/espanso"
