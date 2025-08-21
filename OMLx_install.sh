@@ -175,6 +175,21 @@ fi
 
 print_success "Native packages installation completed."
 
+# Install Proton VPN from OpenMandriva Cooker repository
+print_status "Installing Proton VPN from OpenMandriva Cooker repository..."
+print_status "This will enable the cooker-x86_64 repository and install proton-vpn-gtk-app"
+
+# Refresh sudo timeout before Proton VPN installation
+refresh_sudo
+
+if sudo dnf in --enablerepo=cooker-x86_64 proton-vpn-gtk-app --refresh; then
+    print_success "Proton VPN installed successfully from Cooker repository"
+    print_status "Proton VPN is now available in your applications menu"
+else
+    print_error "Failed to install Proton VPN from Cooker repository"
+    print_warning "Continuing with remaining installations..."
+fi
+
 # Install Flatpaks
 print_status "Installing Flatpak applications from $flatpaks..."
 
