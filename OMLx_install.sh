@@ -979,10 +979,19 @@ if git clone "$dotfiles" "$stow_dir"; then
         # Since we've cleaned up conflicts, we can use a simpler stow command
         print_status "Applying all stow packages..."
         
-        # Try to stow all packages
-        stow . || {
-            print_error "Failed to apply dotfiles with stow"
+        # Apply stow packages for user configurations
+        print_status "Applying user configuration packages..."
+        stow shell zsh app-configs conky local picture || {
+            print_error "Failed to apply user dotfiles with stow"
             print_warning "You may need to manually resolve conflicts in your dotfiles"
+            print_warning "Continuing with remaining installations..."
+        }
+        
+        # Apply SDDM theme with sudo (system-wide)
+        print_status "Applying SDDM theme (requires sudo)..."
+        sudo stow -t / sddm-theme || {
+            print_error "Failed to apply SDDM theme with stow"
+            print_warning "SDDM theme may not be applied correctly"
             print_warning "Continuing with remaining installations..."
         }
         
