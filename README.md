@@ -13,7 +13,7 @@ cd OMLx_install
 Create a list of packages you want to install on your fresh system:
 ```bash
 # Option A: Generate from current system (if you have one)
-dnf list installed > packages_original.txt
+dnf list --installed > packages_original.txt
 
 # Option B: Create manually
 # Edit packages_original.txt and add packages you want, one per line
