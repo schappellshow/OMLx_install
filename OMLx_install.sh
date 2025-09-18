@@ -987,13 +987,19 @@ if git clone "$dotfiles" "$stow_dir"; then
             print_warning "Continuing with remaining installations..."
         }
         
-        # Apply SDDM theme with sudo (system-wide)
-        print_status "Applying SDDM theme (requires sudo)..."
-        sudo stow -t / sddm-theme || {
-            print_error "Failed to apply SDDM theme with stow"
-            print_warning "SDDM theme may not be applied correctly"
-            print_warning "Continuing with remaining installations..."
-        }
+        # Install SDDM theme to system directory
+        print_status "Installing SDDM theme to system directory..."
+        if [[ -d "sddm-theme/usr/share/sddm/themes/sugar-candy" ]]; then
+            if sudo cp -r sddm-theme/usr/share/sddm/themes/sugar-candy /usr/share/sddm/themes/; then
+                print_success "✓ Successfully installed SDDM theme to /usr/share/sddm/themes/"
+            else
+                print_error "Failed to copy SDDM theme to system directory"
+                print_warning "SDDM theme may not be available"
+            fi
+        else
+            print_warning "⚠ SDDM theme directory not found: sddm-theme/usr/share/sddm/themes/sugar-candy"
+            print_warning "SDDM theme installation skipped"
+        fi
         
         # Configure SDDM to use the sugar-candy theme
         print_status "Configuring SDDM to use sugar-candy theme..."
