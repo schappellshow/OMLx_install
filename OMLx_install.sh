@@ -981,7 +981,7 @@ if git clone "$dotfiles" "$stow_dir"; then
         
         # Apply stow packages for user configurations
         print_status "Applying user configuration packages..."
-        stow shell zsh app-configs conky local picture || {
+        stow shell zsh app-configs conky local pictures || {
             print_error "Failed to apply user dotfiles with stow"
             print_warning "You may need to manually resolve conflicts in your dotfiles"
             print_warning "Continuing with remaining installations..."
@@ -994,6 +994,20 @@ if git clone "$dotfiles" "$stow_dir"; then
             print_warning "SDDM theme may not be applied correctly"
             print_warning "Continuing with remaining installations..."
         }
+        
+        # Configure SDDM to use the sugar-candy theme
+        print_status "Configuring SDDM to use sugar-candy theme..."
+        if sudo tee -a /etc/sddm.conf > /dev/null << 'EOF'
+
+[Theme]
+Current=sugar-candy
+EOF
+        then
+            print_success "SDDM theme configuration added to /etc/sddm.conf"
+        else
+            print_error "Failed to configure SDDM theme in /etc/sddm.conf"
+            print_warning "You may need to manually add the theme configuration"
+        fi
         
         print_success "Dotfiles applied successfully."
         
