@@ -891,6 +891,7 @@ echo "  • ~/.config/kitty/ (will be replaced with your custom configs)"
 echo "  • ~/.config/micro/ (will be replaced with your custom configs)"
 echo "  • ~/.conky/ (will be replaced with your custom configs)"
 echo "  • ~/.local/share/espanso/ (will be replaced with your custom configs)"
+echo "  • ~/.local/share/flatpak/overrides/ (will be replaced with your custom flatpak overrides)"
 echo "  • ~/.oh-my-zsh/custom/aliases.zsh (will be replaced with your custom aliases)"
 echo "  • Note: ~/.oh-my-zsh/custom/plugins/ directory will be preserved for zsh plugins"
 echo ""
@@ -916,6 +917,7 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
         if [[ -d "$HOME/.config/micro" ]]; then cp -r "$HOME/.config/micro" "$backup_dir/"; fi
         if [[ -d "$HOME/.conky" ]]; then cp -r "$HOME/.conky" "$backup_dir/"; fi
         if [[ -d "$HOME/.local/share/espanso" ]]; then cp -r "$HOME/.local/share/espanso" "$backup_dir/"; fi
+        if [[ -d "$HOME/.local/share/flatpak/overrides" ]]; then cp -r "$HOME/.local/share/flatpak/overrides" "$backup_dir/"; fi
         if [[ -d "$HOME/.oh-my-zsh/custom" ]]; then cp -r "$HOME/.oh-my-zsh/custom" "$backup_dir/"; fi
         
         print_success "Backup completed in: $backup_dir"
@@ -943,6 +945,7 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
     print_status "Removing additional potential conflicts..."
     rm -rf "$HOME/.conky"
     rm -rf "$HOME/.local/share/espanso"
+    rm -rf "$HOME/.local/share/flatpak/overrides"
     # Only remove specific aliases file, preserve plugins directory for zsh plugins
     rm -rf "$HOME/.oh-my-zsh/custom/aliases.zsh"
 
@@ -981,6 +984,7 @@ if git clone "$dotfiles" "$stow_dir"; then
         
         # Apply stow packages for user configurations
         print_status "Applying user configuration packages..."
+        print_status "Including flatpak overrides for consistent theming (GTK_THEME=Breeze:dark)..."
         stow shell zsh app-configs conky local pictures || {
             print_error "Failed to apply user dotfiles with stow"
             print_warning "You may need to manually resolve conflicts in your dotfiles"
@@ -1016,6 +1020,7 @@ EOF
         fi
         
         print_success "Dotfiles applied successfully."
+        print_status "✓ Flatpak overrides applied - GTK applications will use Breeze:dark theme"
         
         # Return to original directory
         cd "$script_dir" || {
