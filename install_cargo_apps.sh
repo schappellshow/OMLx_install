@@ -299,7 +299,7 @@ install_all_cargo_apps() {
     print_status "Installing all cargo applications..."
     
     # Define cargo applications to install
-    local cargo_apps=("cargo-make" "cargo-update" "fd-find" "resvg" "ripgrep" "rust-script" "yazi-fm" "yazi-cli")
+    local cargo_apps=("cargo-make" "cargo-update" "fd-find" "fresh" "resvg" "ripgrep" "rust-script" "yazi-fm" "yazi-cli")
     
     local successful_apps=()
     local failed_apps=()
@@ -336,6 +336,7 @@ show_available_apps() {
     echo "  • cargo-make    - Task runner and build tool"
     echo "  • cargo-update  - Update installed binaries"
     echo "  • fd-find       - Fast file finder"
+    echo "  • fresh         - Terminal-based text editor"
     echo "  • resvg         - SVG renderer"
     echo "  • ripgrep       - Fast text search"
     echo "  • rust-script   - Rust scripting tool"
