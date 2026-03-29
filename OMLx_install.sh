@@ -691,36 +691,46 @@ else
     print_warning "Continuing with remaining installations..."
 fi
 
-# Install kwin-forceblur plugin
-print_status "Installing kwin-forceblur plugin..."
+# Install kwin-effects-glass plugin (blur with force blur, rounded corners, refraction)
+# Glass is a fork of kwin-forceblur for Plasma 6.5+
+# Pinned to v6.6.1-2 — the last version supporting Plasma 6.5 (X11)
+# Project: https://github.com/4v3ngR/kwin-effects-glass
+print_status "Installing kwin-effects-glass plugin..."
 
-# Install ECM (Extra CMake Modules) for kwin-forceblur
-print_status "Installing ECM for kwin-forceblur..."
-sudo dnf install -y extra-cmake-modules.noarch || {
-    print_warning "Failed to install ECM, kwin-forceblur may not build"
+# Install build dependencies for glass
+print_status "Installing kwin-effects-glass build dependencies..."
+sudo dnf install -y extra-cmake-modules \
+  kwin-devel kwin-x11-devel lib64kdecorations3-devel \
+  lib64KF6ConfigCore-devel lib64KF6ConfigWidgets-devel lib64KF6Crash-devel \
+  lib64KF6GlobalAccel-devel lib64KF6GuiAddons-devel lib64KF6I18n-devel \
+  lib64KF6KCMUtils-devel lib64KF6KIO-devel lib64KF6Notifications-devel \
+  lib64KF6Service-devel lib64KF6WidgetsAddons-devel lib64KF6WindowSystem-devel \
+  lib64Qt6Core-devel lib64Qt6DBus-devel lib64Qt6Gui-devel lib64Qt6Network-devel \
+  lib64Qt6OpenGL-devel lib64Qt6UiTools-devel lib64Qt6Widgets-devel lib64Qt6Xml-devel \
+  lib64epoxy-devel lib64xcb-devel || {
+    print_warning "Some build dependencies failed to install, glass plugin may not build"
 }
 
-FORCEBLUR_VERSION="1.3.6"
-FORCEBLUR_URL="https://github.com/taj-ny/kwin-effects-forceblur/archive/refs/tags/v${FORCEBLUR_VERSION}.tar.gz"
-FORCEBLUR_DIR="$HOME/kwin-effects-forceblur-${FORCEBLUR_VERSION}"
-FORCEBLUR_ARCHIVE="/tmp/kwin-forceblur-v${FORCEBLUR_VERSION}.tar.gz"
+GLASS_VERSION="6.6.1-2"
+GLASS_URL="https://github.com/4v3ngR/kwin-effects-glass/archive/refs/tags/v${GLASS_VERSION}.tar.gz"
+GLASS_ARCHIVE="/tmp/kwin-effects-glass-v${GLASS_VERSION}.tar.gz"
 
-# Download and extract kwin-forceblur
-print_status "Downloading kwin-forceblur v${FORCEBLUR_VERSION}..."
-if curl -L "$FORCEBLUR_URL" -o "$FORCEBLUR_ARCHIVE"; then
-    print_status "Extracting kwin-forceblur..."
+# Download and extract kwin-effects-glass
+print_status "Downloading kwin-effects-glass v${GLASS_VERSION}..."
+if curl -L "$GLASS_URL" -o "$GLASS_ARCHIVE"; then
+    print_status "Extracting kwin-effects-glass..."
     cd /tmp || {
         print_error "Failed to change to /tmp directory"
     }
     
-    if tar -xzf "$FORCEBLUR_ARCHIVE"; then
+    if tar -xzf "$GLASS_ARCHIVE"; then
         # Find the extracted directory
-        extracted_dir=$(find /tmp -maxdepth 1 -name "kwin-effects-forceblur-*" -type d | head -1)
+        extracted_dir=$(find /tmp -maxdepth 1 -name "kwin-effects-glass-*" -type d | head -1)
         
         if [[ -n "$extracted_dir" && -d "$extracted_dir" ]]; then
-            print_status "Building kwin-forceblur..."
+            print_status "Building kwin-effects-glass..."
             cd "$extracted_dir" || {
-                print_error "Failed to change to kwin-forceblur directory"
+                print_error "Failed to change to kwin-effects-glass directory"
             }
             
             # Create build directory and build
@@ -729,84 +739,53 @@ if curl -L "$FORCEBLUR_URL" -o "$FORCEBLUR_ARCHIVE"; then
                 print_error "Failed to change to build directory"
             }
             
-            if cmake .. -DCMAKE_INSTALL_PREFIX=/usr; then
+            # On OpenMandriva, KDE ECM installs to /usr/lib64/plugins/ but KWin
+            # loads effects from /usr/lib64/qt6/plugins/. Override KDE_INSTALL_PLUGINDIR
+            # so the plugin installs directly to the correct Qt6 path.
+            if cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DKDE_INSTALL_PLUGINDIR=/usr/lib64/qt6/plugins; then
                 if make -j$(nproc); then
                     if sudo make install; then
-                        # Apply OpenMandriva-specific fixes based on the installation steps file
-                        print_status "Applying OpenMandriva-specific plugin fixes..."
+                        # Verify installation
+                        print_status "Verifying kwin-effects-glass installation..."
                         
-                        # Create Qt6 plugin directories
-                        sudo mkdir -p /usr/lib64/qt6/plugins/kwin/effects/plugins
-                        sudo mkdir -p /usr/lib64/qt6/plugins/kwin/effects/configs
-                        sudo mkdir -p /usr/share/kwin/effects/forceblur
-                        
-                        # Copy plugin files to correct Qt6 locations
-                        if [[ -f "src/forceblur.so" ]]; then
-                            print_status "Copying plugin binary to Qt6 directory..."
-                            sudo cp src/forceblur.so /usr/lib64/qt6/plugins/kwin/effects/plugins/ || {
-                                print_error "Failed to copy plugin binary"
-                            }
-                        fi
-                        
-                        if [[ -f "src/kcm/kwin_better_blur_config.so" ]]; then
-                            print_status "Copying configuration module to Qt6 directory..."
-                            sudo cp src/kcm/kwin_better_blur_config.so /usr/lib64/qt6/plugins/kwin/effects/configs/ || {
-                                print_error "Failed to copy configuration module"
-                            }
-                        fi
-                        
-                        if [[ -f "../src/metadata.json" ]]; then
-                            print_status "Copying metadata file..."
-                            sudo cp ../src/metadata.json /usr/share/kwin/effects/forceblur/ || {
-                                print_error "Failed to copy metadata file"
-                            }
-                        fi
-                        
-                        # Verify installations
-                        print_status "Verifying kwin-forceblur installation..."
-                        if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/plugins/forceblur.so" ]]; then
-                            print_success "Plugin binary installed successfully"
+                        if [[ -f "/usr/lib64/qt6/plugins/kwin-x11/effects/plugins/glass_x11.so" ]]; then
+                            print_success "Glass plugin binary (X11) installed successfully"
                         else
-                            print_error "Plugin binary not found in expected location"
+                            print_warning "Glass X11 plugin binary not found in expected location"
                         fi
                         
-                        if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/configs/kwin_better_blur_config.so" ]]; then
-                            print_success "Configuration module installed successfully"
+                        if [[ -f "/usr/lib64/qt6/plugins/kwin-x11/effects/configs/kwin_glass_config.so" ]]; then
+                            print_success "Glass configuration module installed successfully"
                         else
-                            print_error "Configuration module not found in expected location"
+                            print_warning "Glass configuration module not found in expected location"
                         fi
                         
-                        if [[ -f "/usr/share/kwin/effects/forceblur/metadata.json" ]]; then
-                            print_success "Metadata file installed successfully"
-                        else
-                            print_error "Metadata file not found in expected location"
-                        fi
-                        
-                        print_success "Kwin-forceblur plugin installation completed"
+                        print_success "Kwin-effects-glass plugin installation completed"
+                        print_status "Note: Disable any existing blur effects before enabling Glass (they conflict)"
                         print_status "Note: You may need to restart KWin or reboot to see the plugin in System Settings"
                     else
-                        print_error "Failed to install kwin-forceblur, continuing..."
+                        print_error "Failed to install kwin-effects-glass, continuing..."
                     fi
                 else
-                    print_error "Failed to build kwin-forceblur, continuing..."
+                    print_error "Failed to build kwin-effects-glass, continuing..."
                 fi
             else
-                print_error "Failed to configure kwin-forceblur with cmake, continuing..."
+                print_error "Failed to configure kwin-effects-glass with cmake, continuing..."
             fi
             
             # Return to original directory
             cd - > /dev/null
         else
-            print_error "Failed to extract kwin-forceblur, skipping installation"
+            print_error "Failed to find extracted kwin-effects-glass directory, skipping installation"
         fi
     else
-        print_error "Failed to extract kwin-forceblur, skipping installation"
+        print_error "Failed to extract kwin-effects-glass, skipping installation"
     fi
     
     # Clean up downloaded file
-    rm -f "$FORCEBLUR_ARCHIVE"
+    rm -f "$GLASS_ARCHIVE"
 else
-    print_error "Failed to download kwin-forceblur, skipping installation"
+    print_error "Failed to download kwin-effects-glass, skipping installation"
 fi
 
 print_success "Git-based projects installation completed"
