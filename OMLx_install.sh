@@ -126,6 +126,9 @@ print_status "Installing packages from packages.txt..."
 # Refresh sudo timeout before package installation
 refresh_sudo
 
+# Track packages that couldn't be found/installed — reported at end of script
+failed_packages=()
+
 # Check if packages.txt exists
 if [[ -s "$packages" ]]; then
     # First, try to install all packages at once for efficiency
@@ -133,40 +136,24 @@ if [[ -s "$packages" ]]; then
     if sudo dnf install -y $(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}'); then
         print_success "All packages installed successfully in bulk!"
     else
-        print_warning "Bulk installation failed, trying individual packages..."
-        
-        # Track failed packages for individual retry
-        failed_packages=()
-        successful_packages=()
-        
-        # Read packages line by line and install individually
+        print_warning "Bulk installation failed — installing packages individually..."
+        print_status "Valid packages will be installed now; any not found will be listed at the end."
+
         while IFS= read -r package || [[ -n "$package" ]]; do
             # Skip empty lines and comments
             [[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
-            
-            # Extract just the package name (before any version info)
+
             package_name=$(echo "$package" | awk '{print $1}')
-            print_status "Installing: $package_name"
-            
-            # Try to install individual package
+
             if sudo dnf install -y "$package_name" 2>/dev/null; then
                 print_success "✓ Installed: $package_name"
-                successful_packages+=("$package_name")
             else
-                print_warning "⚠ Failed to install: $package_name"
+                print_warning "⚠ Not found: $package_name"
                 failed_packages+=("$package_name")
             fi
         done < "$packages"
-        
-        # Report results
-        print_status "Package installation summary:"
-        print_success "Successfully installed: ${#successful_packages[@]} packages"
-        if [[ ${#failed_packages[@]} -gt 0 ]]; then
-            print_warning "Failed to install: ${#failed_packages[@]} packages"
-            for pkg in "${failed_packages[@]}"; do
-                print_warning "  - $pkg"
-            done
-        fi
+
+        print_success "Individual package installation complete."
     fi
 else
     print_error "Package list file is empty"
@@ -1103,6 +1090,21 @@ if [[ $install_cargo =~ ^[Yy]$ ]]; then
 else
     print_warning "Skipping cargo applications installation"
     print_status "You can install cargo applications later by running: bash install_cargo_apps.sh"
+fi
+
+# Report any packages that couldn't be installed due to name/availability issues
+if [[ ${#failed_packages[@]} -gt 0 ]]; then
+    echo ""
+    print_warning "========================================================"
+    print_warning "  PACKAGES NOT INSTALLED — NAME OR AVAILABILITY ISSUE"
+    print_warning "========================================================"
+    print_warning "The following ${#failed_packages[@]} package(s) were not found in the repos:"
+    for pkg in "${failed_packages[@]}"; do
+        print_warning "  - $pkg"
+    done
+    print_warning "Update packages.txt with the correct names and re-run the script."
+    print_warning "========================================================"
+    echo ""
 fi
 
 print_success "\n🎉 Installation script completed successfully!"
