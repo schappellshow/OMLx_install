@@ -162,20 +162,6 @@ fi
 
 print_success "Native packages installation completed."
 
-# Install Proton VPN from OpenMandriva ROME repository
-print_status "Installing Proton VPN..."
-
-# Refresh sudo timeout before Proton VPN installation
-refresh_sudo
-
-if sudo dnf install -y proton-vpn-gtk-app; then
-    print_success "Proton VPN installed successfully"
-    print_status "Proton VPN is now available in your applications menu"
-else
-    print_error "Failed to install Proton VPN"
-    print_warning "Continuing with remaining installations..."
-fi
-
 # Install Flatpaks
 print_status "Installing Flatpak applications from $flatpaks..."
 
