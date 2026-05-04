@@ -162,18 +162,17 @@ fi
 
 print_success "Native packages installation completed."
 
-# Install Proton VPN from OpenMandriva Cooker repository
-print_status "Installing Proton VPN from OpenMandriva Cooker repository..."
-print_status "This will enable the cooker-x86_64 repository and install proton-vpn-gtk-app"
+# Install Proton VPN from OpenMandriva ROME repository
+print_status "Installing Proton VPN..."
 
 # Refresh sudo timeout before Proton VPN installation
 refresh_sudo
 
-if sudo dnf in -y --enablerepo=cooker-x86_64 proton-vpn-gtk-app --refresh; then
-    print_success "Proton VPN installed successfully from Cooker repository"
+if sudo dnf install -y proton-vpn-gtk-app; then
+    print_success "Proton VPN installed successfully"
     print_status "Proton VPN is now available in your applications menu"
 else
-    print_error "Failed to install Proton VPN from Cooker repository"
+    print_error "Failed to install Proton VPN"
     print_warning "Continuing with remaining installations..."
 fi
 
@@ -477,33 +476,6 @@ if curl -L "https://download.qoppa.com/pdfstudioviewer/PDFStudioViewer_linux64.s
     rm -f "$PDF_STUDIO_FILE"
 else
     print_error "Failed to download PDF Studio Viewer"
-    print_warning "Continuing with remaining installations..."
-fi
-
-# Install Proton Pass
-print_status "Installing Proton Pass..."
-PROTON_PASS_FILE="$TEMP_DIR/proton-pass.rpm"
-
-print_status "Downloading Proton Pass RPM..."
-if curl -L "https://proton.me/download/PassDesktop/linux/x64/ProtonPass.rpm" -o "$PROTON_PASS_FILE" && validate_download "$PROTON_PASS_FILE" 1000000; then
-    # Proton Pass dependencies are now handled by packages.txt installation
-    print_status "Installing Proton Pass..."
-    
-    # Try multiple installation methods
-    if sudo dnf install -y "$PROTON_PASS_FILE"; then
-        print_success "Proton Pass installed successfully with DNF"
-        verify_repository_integration "proton"
-    elif sudo rpm -ivh --nodeps "$PROTON_PASS_FILE"; then
-        print_success "Proton Pass installed with RPM (dependencies may need manual installation)"
-        print_warning "You may need to install missing dependencies manually"
-    else
-        print_error "Failed to install Proton Pass"
-        print_warning "Continuing with remaining installations..."
-    fi
-    
-    rm -f "$PROTON_PASS_FILE"
-else
-    print_error "Failed to download Proton Pass"
     print_warning "Continuing with remaining installations..."
 fi
 
