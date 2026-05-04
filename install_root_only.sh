@@ -269,57 +269,29 @@ fi
 
 # Install Mailspring
 print_status "Installing Mailspring..."
-MAILSPRING_VERSION="1.13.0"
-MAILSPRING_ARCHIVE="mailspring-${MAILSPRING_VERSION}-linux-x64.deb"
-MAILSPRING_URL="https://github.com/Foundry376/Mailspring/releases/download/${MAILSPRING_VERSION}/${MAILSPRING_ARCHIVE}"
+MAILSPRING_FILE="/tmp/mailspring.rpm"
 
-if curl -L -o "$MAILSPRING_ARCHIVE" "$MAILSPRING_URL"; then
-    print_status "Mailspring downloaded successfully"
-    # Convert deb to rpm or install directly if possible
-    if command -v alien >/dev/null 2>&1; then
-        print_status "Converting deb to rpm using alien..."
-        if alien -r "$MAILSPRING_ARCHIVE"; then
-            local rpm_file=$(ls mailspring-*.rpm 2>/dev/null | head -1)
-            if [[ -n "$rpm_file" ]]; then
-                if sudo dnf install -y "$rpm_file"; then
-                    print_success "Mailspring installed successfully"
-                else
-                    print_error "Failed to install converted Mailspring rpm"
-                fi
-                rm -f "$rpm_file"
-            else
-                print_error "Failed to convert deb to rpm"
-            fi
-        else
-            print_error "Failed to convert deb to rpm using alien"
-        fi
+print_status "Downloading Mailspring RPM..."
+if curl -L "https://updates.getmailspring.com/download?platform=linuxRpm" -o "$MAILSPRING_FILE"; then
+    print_status "Installing Mailspring dependencies..."
+    sudo dnf install -y lib64appindicator lib64gtk3_0 || {
+        print_warning "Some Mailspring dependencies failed to install, continuing with --nodeps"
+    }
+
+    if sudo dnf install -y "$MAILSPRING_FILE"; then
+        print_success "Mailspring installed successfully with DNF"
+    elif sudo rpm -ivh --nodeps "$MAILSPRING_FILE"; then
+        print_success "Mailspring installed with RPM (--nodeps)"
+        print_warning "Mailspring installed without dependency checking - ensure libappindicator and gtk3 are installed"
     else
-        print_status "Installing alien for deb to rpm conversion..."
-        if sudo dnf install -y alien; then
-            print_status "Converting deb to rpm..."
-            if alien -r "$MAILSPRING_ARCHIVE"; then
-                local rpm_file=$(ls mailspring-*.rpm 2>/dev/null | head -1)
-                if [[ -n "$rpm_file" ]]; then
-                    if sudo dnf install -y "$rpm_file"; then
-                        print_success "Mailspring installed successfully"
-                    else
-                        print_error "Failed to install converted Mailspring rpm"
-                    fi
-                    rm -f "$rpm_file"
-                else
-                    print_error "Failed to convert deb to rpm"
-                fi
-            else
-                print_error "Failed to convert deb to rpm using alien"
-            fi
-        else
-            print_error "Failed to install alien"
-        fi
+        print_error "Failed to install Mailspring with both DNF and RPM methods"
+        print_warning "Continuing with remaining installations..."
     fi
-    # Clean up downloaded file
-    rm -f "$MAILSPRING_ARCHIVE"
+
+    rm -f "$MAILSPRING_FILE"
 else
     print_error "Failed to download Mailspring"
+    print_warning "Continuing with remaining installations..."
 fi
 
 # Install PDF Studio Viewer (shell script installer)
@@ -378,147 +350,158 @@ fi
 
 # Install espanso using AppImage
 print_status "Installing espanso using AppImage..."
-ESPANSO_VERSION="2.1.8"
-ESPANSO_ARCHIVE="espanso-linux-x86_64.tar.gz"
-ESPANSO_URL="https://github.com/federico-terzi/espanso/releases/download/v${ESPANSO_VERSION}/${ESPANSO_ARCHIVE}"
 
-if curl -L -o "$ESPANSO_ARCHIVE" "$ESPANSO_URL"; then
-    print_status "Espanso downloaded successfully"
-    if tar -xzf "$ESPANSO_ARCHIVE"; then
-        print_status "Espanso extracted successfully"
-        if sudo mv espanso /usr/local/bin/; then
-            print_success "Espanso installed successfully"
-            print_status "You can now use 'espanso' command"
-        else
-            print_error "Failed to move espanso to /usr/local/bin"
-        fi
-    else
-        print_error "Failed to extract espanso"
-    fi
-    # Clean up downloaded file
-    rm -f "$ESPANSO_ARCHIVE"
-else
-    print_error "Failed to download espanso"
-fi
+# Create the $HOME/opt destination folder (official method)
+ESPANSO_DIR="$HOME/opt"
+mkdir -p "$ESPANSO_DIR"
 
-# Install Cursor AppImage
-print_status "Installing Cursor AppImage..."
-CURSOR_VERSION="0.45.0"
-CURSOR_ARCHIVE="Cursor-${CURSOR_VERSION}-x86_64.AppImage"
-CURSOR_URL="https://download.cursor.sh/linux/appImage/x64/${CURSOR_ARCHIVE}"
+# Download the AppImage inside it (official URL)
+ESPANSO_URL="https://github.com/espanso/espanso/releases/download/v2.2.1/Espanso-X11.AppImage"
+ESPANSO_FILE="$ESPANSO_DIR/Espanso.AppImage"
 
-# Create AppImages directory if it doesn't exist
-mkdir -p "$HOME/AppImages"
+print_status "Downloading espanso AppImage..."
+if curl -L "$ESPANSO_URL" -o "$ESPANSO_FILE"; then
+    print_success "Espanso AppImage downloaded successfully"
 
-if curl -L -o "$HOME/AppImages/$CURSOR_ARCHIVE" "$CURSOR_URL"; then
-    print_status "Cursor AppImage downloaded successfully"
-    chmod +x "$HOME/AppImages/$CURSOR_ARCHIVE"
-    
-    # Create desktop entry
-    cat > "$HOME/.local/share/applications/cursor.desktop" << EOF
-[Desktop Entry]
-Name=Cursor
-Comment=AI-first code editor
-Exec=$HOME/AppImages/$CURSOR_ARCHIVE
-Icon=cursor
-Type=Application
-Categories=Development;IDE;
-StartupNotify=true
-EOF
-    
-    print_success "Cursor AppImage installed successfully"
-    print_status "You can now launch Cursor from your applications menu"
-else
-    print_error "Failed to download Cursor AppImage"
-fi
+    # Make it executable (official method)
+    chmod u+x "$ESPANSO_FILE"
 
-# Install kwin-forceblur plugin
-print_status "Installing kwin-forceblur plugin..."
-FORCEBLUR_VERSION="1.0.0"
-FORCEBLUR_ARCHIVE="kwin-forceblur-${FORCEBLUR_VERSION}.tar.gz"
-FORCEBLUR_URL="https://github.com/esjeon/kwin-forceblur/archive/refs/tags/v${FORCEBLUR_VERSION}.tar.gz"
+    # Create the "espanso" command alias (official method)
+    print_status "Registering espanso command alias..."
+    if sudo "$ESPANSO_FILE" env-path register; then
+        print_success "Espanso command alias registered successfully"
 
-if curl -L -o "$FORCEBLUR_ARCHIVE" "$FORCEBLUR_URL"; then
-    print_status "Kwin-forceblur downloaded successfully"
-    if tar -xzf "$FORCEBLUR_ARCHIVE"; then
-        print_status "Kwin-forceblur extracted successfully"
-        cd "kwin-forceblur-${FORCEBLUR_VERSION}" || {
-            print_error "Failed to change to kwin-forceblur directory"
-            cd "$script_dir"
-        }
-        
-        # Install ECM (Extra CMake Modules) for kwin-forceblur
-        print_status "Installing ECM (Extra CMake Modules) for kwin-forceblur..."
-        sudo dnf install -y extra-cmake-modules || {
-            print_error "Failed to install ECM"
-            cd "$script_dir"
-        }
-        
-        if cmake -B build -S .; then
-            print_status "Kwin-forceblur configured successfully"
-            if cmake --build build; then
-                print_status "Kwin-forceblur built successfully"
-                
-                # Copy plugin files to correct Qt6 locations
-                if [[ -f "build/src/forceblur.so" ]]; then
-                    print_status "Copying plugin binary to Qt6 directory..."
-                    sudo cp build/src/forceblur.so /usr/lib64/qt6/plugins/kwin/effects/plugins/ || {
-                        print_error "Failed to copy plugin binary"
-                    }
-                fi
-                
-                if [[ -f "build/src/kcm/kwin_better_blur_config.so" ]]; then
-                    print_status "Copying configuration module to Qt6 directory..."
-                    sudo cp build/src/kcm/kwin_better_blur_config.so /usr/lib64/qt6/plugins/kwin/effects/configs/ || {
-                        print_error "Failed to copy configuration module"
-                    }
-                fi
-                
-                if [[ -f "src/metadata.json" ]]; then
-                    print_status "Copying metadata file..."
-                    sudo cp src/metadata.json /usr/share/kwin/effects/forceblur/ || {
-                        print_error "Failed to copy metadata file"
-                    }
-                fi
-                
-                # Verify installations
-                print_status "Verifying kwin-forceblur installation..."
-                if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/plugins/forceblur.so" ]]; then
-                    print_success "Plugin binary installed successfully"
-                else
-                    print_error "Plugin binary not found in expected location"
-                fi
-                
-                if [[ -f "/usr/lib64/qt6/plugins/kwin/effects/configs/kwin_better_blur_config.so" ]]; then
-                    print_success "Configuration module installed successfully"
-                else
-                    print_error "Configuration module not found in expected location"
-                fi
-                
-                if [[ -f "/usr/share/kwin/effects/forceblur/metadata.json" ]]; then
-                    print_success "Metadata file installed successfully"
-                else
-                    print_error "Metadata file not found in expected location"
-                fi
-                
-                print_success "Kwin-forceblur plugin installation completed"
-                print_status "Note: You may need to restart KWin or reboot to see the plugin in System Settings"
+        # Register espanso as a systemd service (official method)
+        print_status "Registering espanso service..."
+        if espanso service register; then
+            print_success "Espanso service registered successfully"
+
+            # Start espanso (official method)
+            print_status "Starting espanso..."
+            if espanso start; then
+                print_success "Espanso started successfully"
             else
-                print_error "Failed to build kwin-forceblur, continuing..."
+                print_warning "Failed to start espanso, you may need to start it manually later"
             fi
         else
-            print_error "Failed to configure kwin-forceblur with cmake, continuing..."
+            print_warning "Failed to register espanso service, continuing..."
         fi
-        
-        # Return to original directory
-        cd "$script_dir"
     else
-        print_error "Failed to extract kwin-forceblur, skipping installation"
+        print_warning "Failed to register espanso command alias, but continuing..."
     fi
-    # Clean up downloaded file
-    rm -f "$FORCEBLUR_ARCHIVE"
+
+    print_success "Espanso AppImage installation completed"
+    print_status "Espanso is available at: $ESPANSO_FILE"
 else
-    print_error "Failed to download kwin-forceblur, skipping installation"
+    print_error "Failed to download espanso AppImage"
+    print_warning "Continuing with remaining installations..."
+fi
+
+# Install Zed editor
+print_status "Installing Zed editor..."
+if curl -f https://zed.dev/install.sh | sh; then
+    print_success "Zed editor installed successfully"
+    print_status "Zed is available at: ~/.local/bin/zed"
+else
+    print_error "Failed to install Zed editor"
+    print_warning "Continuing with remaining installations..."
+fi
+
+# Install kwin-effects-glass plugin (blur with force blur, rounded corners, refraction)
+# Glass is a fork of kwin-forceblur for Plasma 6.5+
+# Pinned to v6.6.1-2 — the last version supporting Plasma 6.5 (X11)
+# Project: https://github.com/4v3ngR/kwin-effects-glass
+print_status "Installing kwin-effects-glass plugin..."
+
+# Install build dependencies for glass
+print_status "Installing kwin-effects-glass build dependencies..."
+sudo dnf install -y extra-cmake-modules \
+  kwin-devel kwin-x11-devel lib64kdecorations3-devel \
+  lib64KF6ConfigCore-devel lib64KF6ConfigWidgets-devel lib64KF6Crash-devel \
+  lib64KF6GlobalAccel-devel lib64KF6GuiAddons-devel lib64KF6I18n-devel \
+  lib64KF6KCMUtils-devel lib64KF6KIO-devel lib64KF6Notifications-devel \
+  lib64KF6Service-devel lib64KF6WidgetsAddons-devel lib64KF6WindowSystem-devel \
+  lib64Qt6Core-devel lib64Qt6DBus-devel lib64Qt6Gui-devel lib64Qt6Network-devel \
+  lib64Qt6OpenGL-devel lib64Qt6UiTools-devel lib64Qt6Widgets-devel lib64Qt6Xml-devel \
+  lib64epoxy-devel lib64xcb-devel || {
+    print_warning "Some build dependencies failed to install, glass plugin may not build"
+}
+
+GLASS_VERSION="6.6.1-2"
+GLASS_URL="https://github.com/4v3ngR/kwin-effects-glass/archive/refs/tags/v${GLASS_VERSION}.tar.gz"
+GLASS_ARCHIVE="/tmp/kwin-effects-glass-v${GLASS_VERSION}.tar.gz"
+
+# Download and extract kwin-effects-glass
+print_status "Downloading kwin-effects-glass v${GLASS_VERSION}..."
+if curl -L "$GLASS_URL" -o "$GLASS_ARCHIVE"; then
+    print_status "Extracting kwin-effects-glass..."
+    cd /tmp || {
+        print_error "Failed to change to /tmp directory"
+    }
+
+    if tar -xzf "$GLASS_ARCHIVE"; then
+        # Find the extracted directory
+        extracted_dir=$(find /tmp -maxdepth 1 -name "kwin-effects-glass-*" -type d | head -1)
+
+        if [[ -n "$extracted_dir" && -d "$extracted_dir" ]]; then
+            print_status "Building kwin-effects-glass..."
+            cd "$extracted_dir" || {
+                print_error "Failed to change to kwin-effects-glass directory"
+            }
+
+            # Create build directory and build
+            mkdir -p build
+            cd build || {
+                print_error "Failed to change to build directory"
+            }
+
+            # On OpenMandriva, KDE ECM installs to /usr/lib64/plugins/ but KWin
+            # loads effects from /usr/lib64/qt6/plugins/. Override KDE_INSTALL_PLUGINDIR
+            # so the plugin installs directly to the correct Qt6 path.
+            if cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DKDE_INSTALL_PLUGINDIR=/usr/lib64/qt6/plugins; then
+                if make -j$(nproc); then
+                    if sudo make install; then
+                        # Verify installation
+                        print_status "Verifying kwin-effects-glass installation..."
+
+                        if [[ -f "/usr/lib64/qt6/plugins/kwin-x11/effects/plugins/glass_x11.so" ]]; then
+                            print_success "Glass plugin binary (X11) installed successfully"
+                        else
+                            print_warning "Glass X11 plugin binary not found in expected location"
+                        fi
+
+                        if [[ -f "/usr/lib64/qt6/plugins/kwin-x11/effects/configs/kwin_glass_config.so" ]]; then
+                            print_success "Glass configuration module installed successfully"
+                        else
+                            print_warning "Glass configuration module not found in expected location"
+                        fi
+
+                        print_success "Kwin-effects-glass plugin installation completed"
+                        print_status "Note: Disable any existing blur effects before enabling Glass (they conflict)"
+                        print_status "Note: You may need to restart KWin or reboot to see the plugin in System Settings"
+                    else
+                        print_error "Failed to install kwin-effects-glass, continuing..."
+                    fi
+                else
+                    print_error "Failed to build kwin-effects-glass, continuing..."
+                fi
+            else
+                print_error "Failed to configure kwin-effects-glass with cmake, continuing..."
+            fi
+
+            # Return to original directory
+            cd "$script_dir"
+        else
+            print_error "Failed to find extracted kwin-effects-glass directory, skipping installation"
+        fi
+    else
+        print_error "Failed to extract kwin-effects-glass, skipping installation"
+    fi
+
+    # Clean up downloaded file
+    rm -f "$GLASS_ARCHIVE"
+else
+    print_error "Failed to download kwin-effects-glass, skipping installation"
 fi
 
 print_success "Git-based projects installation completed"
@@ -624,7 +607,7 @@ print_status "✅ System packages from packages.txt"
 print_status "✅ Flatpak applications from flatpak.txt"
 print_status "✅ Python applications (pipx, trash-cli)"
 print_status "✅ Zsh and Oh My Zsh"
-print_status "✅ Individual applications (Warp, Mailspring, PDF Studio Viewer)"
+print_status "✅ Individual applications (Warp, Mailspring, PDF Studio Viewer, Zed)"
 print_status "✅ Development tools and build dependencies"
 print_status "✅ KDE plugins and enhancements"
 print_status "✅ Cargo applications (if selected)"

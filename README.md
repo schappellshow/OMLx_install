@@ -36,7 +36,21 @@ This script will:
 - **Generate** a clean `packages.txt` file ready for installation
 - **Show statistics** about how many packages were optimized out
 
-### **Step 3: Run the Installation Script**
+### **Step 3: Generate Your Flatpak List**
+`flatpak.txt` is **not included in this repo** — you provide your own. Generate it from your current system or create it manually:
+```bash
+# Option A: Export installed flatpaks from current system
+flatpak list --app --columns=application > flatpak.txt
+
+# Option B: Create manually — one app ID per line
+# Example:
+# com.spotify.Client
+# org.videolan.VLC
+# com.discordapp.Discord
+```
+Place `flatpak.txt` in the repo directory before running the install script.
+
+### **Step 4: Run the Installation Script**
 Install all packages and configure your system:
 ```bash
 bash OMLx_install.sh
@@ -45,7 +59,7 @@ bash OMLx_install.sh
 This script will:
 - **Install packages** from the generated `packages.txt`
 - **Install flatpaks** from `flatpak.txt`
-- **Install additional applications** (Warp, Mailspring, etc.)
+- **Install additional applications** (Warp, Mailspring, Zed, etc.)
 - **Set up your dotfiles** via stow
 - **Configure zsh** with Oh My Zsh and plugins
 - **Install cargo applications** (optional)
@@ -55,7 +69,7 @@ This script will:
 - **`packages_original.txt`** - Your original package list (create this)
 - **`OM_clean_packages.txt`** - Clean OMLx-ROME package list (provided)
 - **`packages.txt`** - Generated clean package list (output of analyzer)
-- **`flatpak.txt`** - Flatpak applications to install
+- **`flatpak.txt`** - Flatpak applications to install (**not tracked in repo — provide your own**)
 - **`OMLx_install.sh`** - Main installation script
 - **`analyze_packages.sh`** - Package list analyzer
 

@@ -190,7 +190,7 @@ if [[ -s "$flatpaks" ]]; then
         # Extract just the app ID (before any version info)
         app_id=$(echo "$flatpak" | awk '{print $1}')
         print_status "Installing Flatpak: $app_id"
-        flatpak install "$app_id" -y || {
+        flatpak install flathub "$app_id" -y || {
             print_error "Failed to install $app_id, continuing..."
         }
     done < "$flatpaks"
@@ -213,18 +213,27 @@ python3 -m pip install --user konsave || {
 }
 
 # Import and apply konsave profile if available
-if [[ -f "$HOME/ROME.knsv" ]]; then
+knsv_file=$(find "$HOME" -maxdepth 1 -name "*.knsv" | head -1)
+
+if [[ -n "$knsv_file" ]]; then
+    profile_name=$(basename "$knsv_file" .knsv)
+    print_status "Found konsave profile: $knsv_file"
+
     print_status "Importing konsave profile..."
-    konsave -i "$HOME/ROME.knsv" || {
+    konsave -i "$knsv_file" || {
         print_error "Failed to import konsave profile, continuing..."
     }
-    
-    print_status "Applying konsave profile..."
-    konsave -a ROME || {
+
+    print_status "Applying konsave profile: $profile_name"
+    konsave -a "$profile_name" || {
         print_error "Failed to apply konsave profile, continuing..."
     }
-    
+
     print_success "Konsave profile imported and applied"
+else
+    print_warning "No .knsv file found in home directory — skipping konsave profile import"
+    print_status "To apply a konsave profile, place a .knsv file in your home directory before running this script"
+fi
 
 # Install pipx for Python package management (recommended for CLI tools)
 print_status "Installing pipx for Python package management..."
@@ -270,10 +279,6 @@ if command -v trash >/dev/null 2>&1; then
     print_status "Tip: Add 'alias rm=\"trash\"' to your .zshrc to make 'rm' use trash by default"
 else
     print_warning "trash-cli installation may have failed"
-fi
-
-else
-    print_error "ROME.knsv not found in home directory, skipping profile import"
 fi
 
 print_success "Python applications installation completed"
@@ -653,28 +658,13 @@ else
     print_warning "Continuing with remaining installations..."
 fi
 
-# Install Cursor AppImage
-print_status "\n=== CURSOR APPIMAGE INSTALLATION ==="
-print_status "Installing Cursor AppImage..."
-
-# Create app_images directory if it doesn't exist
-CURSOR_DIR="$HOME/app_images"
-mkdir -p "$CURSOR_DIR"
-
-# Download Cursor AppImage
-CURSOR_URL="https://download.todesktop.com/230313mzl4w92u92/linux/x64"
-CURSOR_FILE="$CURSOR_DIR/cursor.AppImage"
-
-print_status "Downloading Cursor AppImage..."
-if curl -L "$CURSOR_URL" -o "$CURSOR_FILE"; then
-    # Make AppImage executable
-    chmod +x "$CURSOR_FILE"
-    
-    print_success "Cursor AppImage downloaded successfully"
-    print_status "Cursor is available at: $CURSOR_FILE"
-    print_status "You can manage it with Gear Lever or run it directly: $CURSOR_FILE"
+# Install Zed editor
+print_status "Installing Zed editor..."
+if curl -f https://zed.dev/install.sh | sh; then
+    print_success "Zed editor installed successfully"
+    print_status "Zed is available at: ~/.local/bin/zed"
 else
-    print_error "Failed to download Cursor AppImage"
+    print_error "Failed to install Zed editor"
     print_warning "Continuing with remaining installations..."
 fi
 
