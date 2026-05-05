@@ -136,24 +136,18 @@ if [[ -s "$packages" ]]; then
     if sudo dnf install -y $(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}'); then
         print_success "All packages installed successfully in bulk!"
     else
-        print_warning "Bulk installation failed — installing packages individually..."
-        print_status "Valid packages will be installed now; any not found will be listed at the end."
+        print_warning "Bulk installation failed — checking which packages are unavailable in the repos..."
 
         while IFS= read -r package || [[ -n "$package" ]]; do
-            # Skip empty lines and comments
             [[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
-
             package_name=$(echo "$package" | awk '{print $1}')
-
-            if sudo dnf install -y "$package_name" 2>/dev/null; then
-                print_success "✓ Installed: $package_name"
-            else
-                print_warning "⚠ Not found: $package_name"
+            if ! dnf repoquery --available --exact --quiet "$package_name" 2>/dev/null | grep -q .; then
+                print_warning "⚠ Not found in repos: $package_name"
                 failed_packages+=("$package_name")
             fi
         done < "$packages"
 
-        print_success "Individual package installation complete."
+        print_warning "Skipping package installation — fix packages.txt and re-run the script."
     fi
 else
     print_error "Package list file is empty"
