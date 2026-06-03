@@ -142,6 +142,44 @@ fi
 
 print_success "Native packages installation completed."
 
+# Install AppImages via AM (AppImage Manager)
+print_status "\n=== APPIMAGE INSTALLATION ==="
+print_status "Installing AM (AppImage Manager)..."
+
+if command -v am >/dev/null 2>&1; then
+    print_success "AM is already installed"
+else
+    curl -s -Lo /tmp/INSTALL https://raw.githubusercontent.com/ivan-hc/AM/main/INSTALL \
+        && chmod a+x /tmp/INSTALL \
+        && sudo /tmp/INSTALL \
+        && rm /tmp/INSTALL || {
+        print_error "Failed to install AM, skipping AppImage installations"
+    }
+fi
+
+if command -v am >/dev/null 2>&1; then
+    print_status "Installing AppImages via AM..."
+
+    appimages=(
+        zen-browser
+        discord
+        signal
+        telegram
+        spotify
+    )
+
+    for app in "${appimages[@]}"; do
+        print_status "Installing $app..."
+        sudo am -i "$app" || {
+            print_error "Failed to install $app, continuing..."
+        }
+    done
+
+    print_success "AppImage installations completed."
+else
+    print_error "AM is not available — skipping AppImage installations"
+fi
+
 # Install Python applications via pip
 print_status "Installing Python applications via pip..."
 
