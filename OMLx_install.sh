@@ -42,7 +42,6 @@ refresh_sudo() {
 config="$HOME/.config"
 dotfiles="https://github.com/schappellshow/stow.git"
 packages="./packages.txt"
-flatpaks="./flatpak.txt"
 stow_dir="$HOME/stow"
 script_dir="$(pwd)"
 
@@ -68,11 +67,6 @@ print_status ""
 print_status "Checking for required files..."
 if [[ ! -f "$packages" ]]; then
     print_error "Package list file '$packages' not found!"
-    exit 1
-fi
-
-if [[ ! -f "$flatpaks" ]]; then
-    print_error "Flatpak list file '$flatpaks' not found!"
     exit 1
 fi
 
@@ -105,17 +99,9 @@ print_success "Essential dependencies installed."
 # Install build tools and core dependencies needed for later installations
 print_status "Installing build tools and core dependencies..."
 sudo dnf install -y make cmake gcc gcc-c++ autoconf automake libtool \
-    python-pip flatpak rust cargo stow || {
+    python-pip rust cargo stow || {
     print_error "Failed to install build tools, continuing anyway..."
 }
-
-# Setup Flatpak if it was installed successfully
-if command -v flatpak >/dev/null 2>&1; then
-    print_status "Setting up Flatpak..."
-    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || {
-        print_error "Failed to add Flathub repository"
-    }
-fi
 
 print_success "Build tools and core dependencies installed."
 
@@ -155,32 +141,6 @@ else
 fi
 
 print_success "Native packages installation completed."
-
-# Install Flatpaks
-print_status "Installing Flatpak applications from $flatpaks..."
-
-# Refresh sudo timeout before flatpak installation
-refresh_sudo
-
-if [[ -s "$flatpaks" ]]; then
-    while IFS= read -r flatpak || [[ -n "$flatpak" ]]; do
-        # Skip empty lines and comments
-        [[ -z "$flatpak" || "$flatpak" =~ ^[[:space:]]*# ]] && continue
-        # Extract just the app ID (before any version info)
-        app_id=$(echo "$flatpak" | awk '{print $1}')
-        print_status "Installing Flatpak: $app_id"
-        flatpak install flathub "$app_id" -y || {
-            print_error "Failed to install $app_id, continuing..."
-        }
-    done < "$flatpaks"
-else
-    print_error "Flatpak list file is empty"
-    exit 1
-fi
-
-print_success "Flatpak applications installation completed."
-
-
 
 # Install Python applications via pip
 print_status "Installing Python applications via pip..."
@@ -799,7 +759,6 @@ echo "  • ~/.config/kitty/ (will be replaced with your custom configs)"
 echo "  • ~/.config/micro/ (will be replaced with your custom configs)"
 echo "  • ~/.conky/ (will be replaced with your custom configs)"
 echo "  • ~/.local/share/espanso/ (will be replaced with your custom configs)"
-echo "  • ~/.local/share/flatpak/overrides/ (will be replaced with your custom flatpak overrides)"
 echo "  • ~/.oh-my-zsh/custom/aliases.zsh (will be replaced with your custom aliases)"
 echo "  • Note: ~/.oh-my-zsh/custom/plugins/ directory will be preserved for zsh plugins"
 echo ""
@@ -825,7 +784,6 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
         if [[ -d "$HOME/.config/micro" ]]; then cp -r "$HOME/.config/micro" "$backup_dir/"; fi
         if [[ -d "$HOME/.conky" ]]; then cp -r "$HOME/.conky" "$backup_dir/"; fi
         if [[ -d "$HOME/.local/share/espanso" ]]; then cp -r "$HOME/.local/share/espanso" "$backup_dir/"; fi
-        if [[ -d "$HOME/.local/share/flatpak/overrides" ]]; then cp -r "$HOME/.local/share/flatpak/overrides" "$backup_dir/"; fi
         if [[ -d "$HOME/.oh-my-zsh/custom" ]]; then cp -r "$HOME/.oh-my-zsh/custom" "$backup_dir/"; fi
         
         print_success "Backup completed in: $backup_dir"
@@ -853,7 +811,6 @@ if [[ $cleanup_confirm =~ ^[Yy]$ ]]; then
     print_status "Removing additional potential conflicts..."
     rm -rf "$HOME/.conky"
     rm -rf "$HOME/.local/share/espanso"
-    rm -rf "$HOME/.local/share/flatpak/overrides"
     # Only remove specific aliases file, preserve plugins directory for zsh plugins
     rm -rf "$HOME/.oh-my-zsh/custom/aliases.zsh"
 
@@ -892,7 +849,6 @@ if git clone "$dotfiles" "$stow_dir"; then
         
         # Apply stow packages for user configurations
         print_status "Applying user configuration packages..."
-        print_status "Including flatpak overrides for consistent theming (GTK_THEME=Breeze:dark)..."
         stow shell zsh app-configs conky local pictures || {
             print_error "Failed to apply user dotfiles with stow"
             print_warning "You may need to manually resolve conflicts in your dotfiles"
@@ -928,8 +884,7 @@ EOF
         fi
         
         print_success "Dotfiles applied successfully."
-        print_status "✓ Flatpak overrides applied - GTK applications will use Breeze:dark theme"
-        
+
         # Return to original directory
         cd "$script_dir" || {
             print_error "Failed to return to script directory"
