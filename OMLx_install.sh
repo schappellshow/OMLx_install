@@ -525,7 +525,7 @@ fi
 # Install Proton Mail Bridge
 # The RPM was built for Fedora/RHEL and requires libfido2, which in turn needs
 # libcbor.so.0.12. OM only ships libcbor 0.13, so we:
-#   1. Install lib64libcbor (provides libcbor.so.0.13)
+#   1. lib64libcbor is installed via packages.txt (provides libcbor.so.0.13)
 #   2. Symlink libcbor.so.0.12 -> libcbor.so.0.13 (minor soname bump, binary compatible)
 #   3. Install lib64fido2 with --nodeps to bypass the soname version check
 #   4. Install Bridge with --nodeps to bypass Fedora-specific package name mismatches
@@ -535,12 +535,6 @@ BRIDGE_RPM_FILE="$TEMP_DIR/protonmail-bridge.rpm"
 BRIDGE_URL="https://proton.me/download/bridge/protonmail-bridge-${BRIDGE_VERSION}-1.x86_64.rpm"
 
 print_status "Installing Proton Mail Bridge ${BRIDGE_VERSION}..."
-
-# Install libcbor (needed by lib64fido2, which is needed by Bridge)
-print_status "Installing libcbor dependency..."
-sudo dnf install -y lib64libcbor || {
-    print_error "Failed to install lib64libcbor, Bridge may not start"
-}
 
 # Symlink libcbor.so.0.12 -> 0.13 to satisfy lib64fido2's soname requirement
 if [[ -f /usr/lib64/libcbor.so.0.13 && ! -f /usr/lib64/libcbor.so.0.12 ]]; then
