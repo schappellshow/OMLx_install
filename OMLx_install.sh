@@ -459,6 +459,126 @@ else
     print_warning "Continuing with remaining installations..."
 fi
 
+# Install Zoom
+# OpenMandriva has an unrelated package called "zoom" in its repos that dnf
+# will use to overwrite the Zoom video conferencing app on system updates.
+# We install the official RPM, then pin it with an exclude in dnf.conf.
+print_status "Installing Zoom..."
+ZOOM_RPM_FILE="$TEMP_DIR/zoom_x86_64.rpm"
+
+print_status "Downloading Zoom RPM..."
+if curl -L "https://zoom.us/client/latest/zoom_x86_64.rpm" -o "$ZOOM_RPM_FILE" && validate_download "$ZOOM_RPM_FILE" 1000000; then
+    if sudo dnf install -y "$ZOOM_RPM_FILE"; then
+        print_success "Zoom installed successfully"
+
+        # Exclude zoom from dnf updates to prevent OM's unrelated "zoom" package
+        # from overwriting Zoom video conferencing on the next system update
+        print_status "Pinning Zoom to prevent dnf from replacing it with the OM repo package..."
+        if grep -q "^exclude=" /etc/dnf/dnf.conf; then
+            # Append to existing exclude line if zoom isn't already there
+            if ! grep -q "zoom" /etc/dnf/dnf.conf; then
+                sudo sed -i 's/^exclude=/exclude=zoom /' /etc/dnf/dnf.conf
+                print_success "Added zoom to existing exclude list in /etc/dnf/dnf.conf"
+            else
+                print_success "zoom is already excluded in /etc/dnf/dnf.conf"
+            fi
+        else
+            echo "exclude=zoom" | sudo tee -a /etc/dnf/dnf.conf > /dev/null
+            print_success "Added exclude=zoom to /etc/dnf/dnf.conf"
+        fi
+    else
+        print_error "Failed to install Zoom"
+        print_warning "Continuing with remaining installations..."
+    fi
+
+    rm -f "$ZOOM_RPM_FILE"
+else
+    print_error "Failed to download Zoom RPM"
+    print_warning "Continuing with remaining installations..."
+fi
+
+# Install Slack
+# Slack does not provide a "latest" redirect URL, so the version is pinned here.
+# Update SLACK_VERSION when a new release is available.
+# OpenMandriva's package naming differs from Fedora/RHEL, so we install with
+# --nodeps — the required .so files are present even though package names differ.
+SLACK_VERSION="4.49.89"
+SLACK_RPM_FILE="$TEMP_DIR/slack.rpm"
+SLACK_URL="https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm"
+
+print_status "Installing Slack ${SLACK_VERSION}..."
+print_status "Downloading Slack RPM..."
+if curl -L "$SLACK_URL" -o "$SLACK_RPM_FILE" && validate_download "$SLACK_RPM_FILE" 1000000; then
+    if sudo rpm -ivh --nodeps "$SLACK_RPM_FILE"; then
+        print_success "Slack installed successfully"
+    else
+        print_error "Failed to install Slack"
+        print_warning "Continuing with remaining installations..."
+    fi
+
+    rm -f "$SLACK_RPM_FILE"
+else
+    print_error "Failed to download Slack RPM"
+    print_warning "Continuing with remaining installations..."
+fi
+
+# Install Proton Mail Bridge
+# The RPM was built for Fedora/RHEL and requires libfido2, which in turn needs
+# libcbor.so.0.12. OM only ships libcbor 0.13, so we:
+#   1. Install lib64libcbor (provides libcbor.so.0.13)
+#   2. Symlink libcbor.so.0.12 -> libcbor.so.0.13 (minor soname bump, binary compatible)
+#   3. Install lib64fido2 with --nodeps to bypass the soname version check
+#   4. Install Bridge with --nodeps to bypass Fedora-specific package name mismatches
+# Update BRIDGE_VERSION when a new release is available.
+BRIDGE_VERSION="3.24.2"
+BRIDGE_RPM_FILE="$TEMP_DIR/protonmail-bridge.rpm"
+BRIDGE_URL="https://proton.me/download/bridge/protonmail-bridge-${BRIDGE_VERSION}-1.x86_64.rpm"
+
+print_status "Installing Proton Mail Bridge ${BRIDGE_VERSION}..."
+
+# Install libcbor (needed by lib64fido2, which is needed by Bridge)
+print_status "Installing libcbor dependency..."
+sudo dnf install -y lib64libcbor || {
+    print_error "Failed to install lib64libcbor, Bridge may not start"
+}
+
+# Symlink libcbor.so.0.12 -> 0.13 to satisfy lib64fido2's soname requirement
+if [[ -f /usr/lib64/libcbor.so.0.13 && ! -f /usr/lib64/libcbor.so.0.12 ]]; then
+    print_status "Creating libcbor soname compatibility symlink..."
+    sudo ln -s /usr/lib64/libcbor.so.0.13 /usr/lib64/libcbor.so.0.12 || {
+        print_error "Failed to create libcbor symlink, Bridge may not start"
+    }
+fi
+
+# Install lib64fido2 with --nodeps (bypasses soname version mismatch in rpm metadata)
+print_status "Installing lib64fido2..."
+FIDO2_RPM="$TEMP_DIR/lib64fido2.rpm"
+if sudo dnf download --destdir "$TEMP_DIR" lib64fido2 2>/dev/null && ls "$TEMP_DIR"/lib64fido2*.rpm &>/dev/null; then
+    FIDO2_RPM=$(ls "$TEMP_DIR"/lib64fido2*.rpm | head -1)
+    sudo rpm -ivh --nodeps "$FIDO2_RPM" || {
+        print_error "Failed to install lib64fido2, Bridge may not start"
+    }
+    rm -f "$FIDO2_RPM"
+else
+    print_error "Failed to download lib64fido2, Bridge may not start"
+fi
+
+# Download and install Bridge
+print_status "Downloading Proton Mail Bridge RPM..."
+if curl -L "$BRIDGE_URL" -o "$BRIDGE_RPM_FILE" && validate_download "$BRIDGE_RPM_FILE" 1000000; then
+    if sudo rpm -ivh --nodeps "$BRIDGE_RPM_FILE"; then
+        print_success "Proton Mail Bridge installed successfully"
+    else
+        print_error "Failed to install Proton Mail Bridge"
+        print_warning "Continuing with remaining installations..."
+    fi
+
+    rm -f "$BRIDGE_RPM_FILE"
+else
+    print_error "Failed to download Proton Mail Bridge RPM"
+    print_warning "Continuing with remaining installations..."
+fi
+
 print_success "Individual RPM packages installation completed"
 
 # Install Git-based projects
