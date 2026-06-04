@@ -579,6 +579,34 @@ else
     print_warning "Continuing with remaining installations..."
 fi
 
+# Install RustDesk
+# Version is fetched dynamically from the GitHub releases API.
+print_status "Installing RustDesk..."
+RUSTDESK_VERSION=$(curl -s "https://api.github.com/repos/rustdesk/rustdesk/releases/latest" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4)
+
+if [[ -n "$RUSTDESK_VERSION" ]]; then
+    RUSTDESK_RPM_FILE="$TEMP_DIR/rustdesk.rpm"
+    RUSTDESK_URL="https://github.com/rustdesk/rustdesk/releases/download/${RUSTDESK_VERSION}/rustdesk-${RUSTDESK_VERSION}-0.x86_64.rpm"
+
+    print_status "Downloading RustDesk ${RUSTDESK_VERSION}..."
+    if curl -L "$RUSTDESK_URL" -o "$RUSTDESK_RPM_FILE" && validate_download "$RUSTDESK_RPM_FILE" 1000000; then
+        if sudo rpm -i --nodeps "$RUSTDESK_RPM_FILE"; then
+            print_success "RustDesk ${RUSTDESK_VERSION} installed successfully"
+        else
+            print_error "Failed to install RustDesk"
+            print_warning "Continuing with remaining installations..."
+        fi
+
+        rm -f "$RUSTDESK_RPM_FILE"
+    else
+        print_error "Failed to download RustDesk"
+        print_warning "Continuing with remaining installations..."
+    fi
+else
+    print_error "Failed to fetch latest RustDesk version from GitHub"
+    print_warning "Continuing with remaining installations..."
+fi
+
 print_success "Individual RPM packages installation completed"
 
 # Install Git-based projects
@@ -835,6 +863,66 @@ if curl -L "$GLASS_URL" -o "$GLASS_ARCHIVE"; then
     rm -f "$GLASS_ARCHIVE"
 else
     print_error "Failed to download kwin-effects-glass, skipping installation"
+fi
+
+# Install timeshift-autosnap-dnf5
+# Fork of timeshift-autosnap maintained for DNF5, used with grub-btrfs to
+# automatically take a Timeshift snapshot before every DNF transaction.
+print_status "Installing timeshift-autosnap-dnf5..."
+AUTOSNAP_DIR="/tmp/timeshift-autosnap-dnf5-$(date +%s)"
+
+if git clone "https://github.com/CalliopeSystem/timeshift-autosnap-dnf5.git" "$AUTOSNAP_DIR"; then
+    cd "$AUTOSNAP_DIR" || {
+        print_error "Failed to change to timeshift-autosnap-dnf5 directory"
+    }
+
+    if sudo make install; then
+        print_success "timeshift-autosnap-dnf5 installed successfully"
+    else
+        print_error "Failed to install timeshift-autosnap-dnf5, continuing..."
+    fi
+
+    cd "$script_dir" || true
+    rm -rf "$AUTOSNAP_DIR"
+else
+    print_error "Failed to clone timeshift-autosnap-dnf5, continuing..."
+fi
+
+# Configure grub-btrfs for OpenMandriva
+# Uncomments the OM/Fedora-specific grub paths in the grub-btrfs config
+print_status "Configuring grub-btrfs..."
+GRUB_BTRFS_CONF="/etc/default/grub-btrfs/config"
+
+if [[ -f "$GRUB_BTRFS_CONF" ]]; then
+    sudo sed -i 's/^#GRUB_BTRFS_GRUB_DIRNAME/GRUB_BTRFS_GRUB_DIRNAME/' "$GRUB_BTRFS_CONF"
+    sudo sed -i 's/^#GRUB_BTRFS_MKCONFIG/GRUB_BTRFS_MKCONFIG/' "$GRUB_BTRFS_CONF"
+    sudo sed -i 's/^#GRUB_BTRFS_SCRIPT_CHECK/GRUB_BTRFS_SCRIPT_CHECK/' "$GRUB_BTRFS_CONF"
+    print_success "grub-btrfs config updated"
+else
+    print_warning "grub-btrfs config not found at $GRUB_BTRFS_CONF — skipping configuration"
+fi
+
+# Update grub-btrfsd service to use timeshift-auto mode
+print_status "Configuring grub-btrfsd service..."
+GRUB_BTRFSD_SERVICE="/usr/lib/systemd/system/grub-btrfsd.service"
+
+if [[ -f "$GRUB_BTRFSD_SERVICE" ]]; then
+    sudo sed -i 's|^ExecStart=.*|ExecStart=/usr/bin/grub-btrfsd --syslog --timeshift-auto|' "$GRUB_BTRFSD_SERVICE"
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now grub-btrfsd || {
+        print_error "Failed to enable grub-btrfsd service, continuing..."
+    }
+    print_success "grub-btrfsd service configured and enabled"
+else
+    print_warning "grub-btrfsd service file not found — skipping service configuration"
+fi
+
+# Regenerate grub config to include btrfs snapshots
+print_status "Regenerating grub config..."
+if sudo grub2-mkconfig -o /boot/grub2/grub.cfg; then
+    print_success "Grub config regenerated successfully"
+else
+    print_error "Failed to regenerate grub config, continuing..."
 fi
 
 print_success "Git-based projects installation completed"
