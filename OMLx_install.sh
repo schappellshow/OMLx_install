@@ -166,6 +166,8 @@ if command -v am >/dev/null 2>&1; then
         signal
         telegram
         spotify
+        mgba
+        iloader
     )
 
     for app in "${appimages[@]}"; do
