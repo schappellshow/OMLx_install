@@ -43,7 +43,9 @@ print_header "OpenMandriva Package List Analyzer"
 # Extract package names from original list (remove version info)
 echo -e "${YELLOW}Processing your original package list (packages_original.txt)...${NC}"
 grep -v '^[[:space:]]*$' packages_original.txt | \
+grep -v '^[^a-z0-9]' | \
 awk '{print $1}' | \
+sed 's/\.[a-z0-9_]*$//' | \
 sed 's/-[0-9].*//' | \
 sort -u > /tmp/original_packages_clean.txt
 
@@ -53,7 +55,9 @@ echo -e "${GREEN}Found $original_count packages in your original list${NC}"
 # Extract package names from clean install (remove version info)
 echo -e "${YELLOW}Processing clean install packages (OM_clean_packages.txt)...${NC}"
 grep -v '^[[:space:]]*$' OM_clean_packages.txt | \
+grep -v '^[^a-z0-9]' | \
 awk '{print $1}' | \
+sed 's/\.[a-z0-9_]*$//' | \
 sed 's/-[0-9].*//' | \
 sort -u > /tmp/clean_packages_clean.txt
 

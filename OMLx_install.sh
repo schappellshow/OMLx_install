@@ -149,52 +149,26 @@ if [[ -s "$packages" ]]; then
 
     if [[ ${#remaining_packages[@]} -eq 0 ]]; then
         print_success "All packages from packages.txt are already installed!"
-    fi
+    else
+        print_status "Installing ${#remaining_packages[@]} packages..."
 
-    while [[ ${#remaining_packages[@]} -gt 0 ]]; do
-        print_status "Attempting bulk install of ${#remaining_packages[@]} packages..."
+        # --skip-unavailable silently skips packages not in repos or already
+        # satisfied under a different name (e.g. alsa-plugins -> lib64alsa-plugins)
+        sudo dnf install -y --skip-unavailable "${remaining_packages[@]}" 2>/tmp/dnf_err.log || true
 
-        if sudo dnf install -y "${remaining_packages[@]}" 2>/tmp/dnf_err.log; then
-            print_success "All ${#remaining_packages[@]} packages installed successfully!"
-            break
-        fi
-
-        # Parse which packages dnf couldn't resolve (handles dnf4 and dnf5 output formats)
+        # Collect packages that were not found for the end-of-script report
         mapfile -t newly_failed < <(
             grep -oP "(?:No match for argument[: ]['\"]?|Cannot find[: ])\K\S+" /tmp/dnf_err.log |
             tr -d "'\""
         )
-
-        if [[ ${#newly_failed[@]} -eq 0 ]]; then
-            print_error "Bulk install failed — see dnf errors below:"
-            cat /tmp/dnf_err.log >&2
-            break
-        fi
-
         for pkg in "${newly_failed[@]}"; do
-            print_warning "⚠ Not found in repos: $pkg — removing from install list"
+            print_warning "⚠ Not found in repos: $pkg"
             failed_packages+=("$pkg")
         done
 
-        # Rebuild remaining list without the unresolvable packages
-        new_remaining=()
-        for p in "${remaining_packages[@]}"; do
-            keep=true
-            for f in "${newly_failed[@]}"; do
-                if [[ "$p" == "$f" || "${p%.*}" == "$f" ]]; then
-                    keep=false
-                    break
-                fi
-            done
-            [[ "$keep" == true ]] && new_remaining+=("$p")
-        done
-        remaining_packages=("${new_remaining[@]}")
-
-        [[ ${#remaining_packages[@]} -gt 0 ]] && \
-            print_status "Retrying without ${#newly_failed[@]} unavailable package(s)..."
-    done
-
-    rm -f /tmp/dnf_err.log
+        rm -f /tmp/dnf_err.log
+        print_success "Package installation completed."
+    fi
 else
     print_error "Package list file is empty"
     exit 1
@@ -234,7 +208,7 @@ if command -v am >/dev/null 2>&1; then
 
     for app in "${appimages[@]}"; do
         print_status "Installing $app..."
-        sudo /usr/local/bin/am -i "$app" || {
+        /usr/local/bin/am -i "$app" || {
             print_error "Failed to install $app, continuing..."
         }
     done
