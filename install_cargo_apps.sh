@@ -134,9 +134,12 @@ configure_openssl() {
     print_status "Configuring OpenSSL for cargo builds..."
     
     # Set OpenSSL environment variables
-    export OPENSSL_DIR=$(pkg-config --variable=prefix openssl)
-    export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
-    export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+    OPENSSL_DIR=$(pkg-config --variable=prefix openssl)
+    export OPENSSL_DIR
+    OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+    export OPENSSL_LIB_DIR
+    OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+    export OPENSSL_INCLUDE_DIR
     export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$PKG_CONFIG_PATH"
     
     print_status "OpenSSL configuration:"
@@ -163,107 +166,93 @@ install_cargo_app() {
     local app="$1"
     local max_retries=3
     local retry_count=0
-    
+    local log_file
+
     print_status "Installing cargo app: $app"
-    
-    # Configure cargo for better network handling
-    print_status "Configuring cargo for better network handling..."
-    
-    # Set cargo network timeout and retry settings
+
     export CARGO_NET_TIMEOUT=120
     export CARGO_NET_RETRY=5
     export CARGO_NET_GIT_FETCH_WITH_CLI=true
-    
-    # Try installation with network optimizations
+
     while [[ $retry_count -lt $max_retries ]]; do
         retry_count=$((retry_count + 1))
         print_status "Attempt $retry_count of $max_retries for $app"
-        
-        # Try with network optimizations
-        if cargo install --locked --verbose "$app" 2>&1 | tee "/tmp/cargo_${app}_install_${retry_count}.log"; then
+        log_file="/tmp/cargo_${app}_install_${retry_count}.log"
+
+        cargo install --locked --verbose "$app" 2>&1 | tee "$log_file"
+        if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
             print_success "$app installed successfully on attempt $retry_count"
             return 0
-        else
-            print_warning "$app installation failed on attempt $retry_count"
-            
-            # Check for specific error types
-            local log_file="/tmp/cargo_${app}_install_${retry_count}.log"
-            
-            if grep -q "Timeout was reached\|spurious network error\|Resolving timed out" "$log_file"; then
-                print_warning "Network timeout detected for $app"
-                
-                if [[ $retry_count -lt $max_retries ]]; then
-                    print_status "Waiting 10 seconds before retry..."
-                    sleep 10
-                    
-                    # Try alternative network configuration
-                    print_status "Trying alternative network configuration..."
-                    export CARGO_NET_TIMEOUT=180
-                    export CARGO_NET_RETRY=10
-                    continue
-                else
-                    print_error "All network attempts failed for $app"
-                fi
-            elif grep -q "openssl\|OpenSSL" "$log_file"; then
-                print_warning "$app has OpenSSL issues - checking OpenSSL configuration..."
-                
-                # Verify OpenSSL is properly installed
-                if ! pkg-config --exists openssl; then
-                    print_error "OpenSSL not found by pkg-config, installing development packages..."
-                    sudo dnf install -y libopenssl-devel.x86_64 lib64openssl-devel.x86_64 || {
-                        print_error "Failed to install OpenSSL development packages"
-                        return 1
-                    }
-                fi
-                
-                # Try with explicit OpenSSL environment variables
-                print_status "Retrying $app with explicit OpenSSL configuration..."
-                if OPENSSL_DIR=$(pkg-config --variable=prefix openssl) \
-                   OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl) \
-                   OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl) \
-                   cargo install --locked "$app" 2>&1 | tee "/tmp/cargo_${app}_openssl.log"; then
-                    print_success "$app installed successfully with explicit OpenSSL config"
-                    return 0
-                else
-                    print_error "Failed to install $app even with explicit OpenSSL configuration"
-                    return 1
-                fi
-            elif grep -q "linking" "$log_file"; then
-                print_warning "$app has linking issues - may need additional development libraries"
-                if [[ $retry_count -lt $max_retries ]]; then
-                    print_status "Trying to install additional development libraries..."
-                    sudo dnf install -y gcc-c++ make cmake || {
-                        print_warning "Failed to install development libraries"
-                    }
-                    continue
-                fi
-            elif grep -q "not found" "$log_file"; then
-                print_warning "$app has missing library issues - may need additional packages"
-                if [[ $retry_count -lt $max_retries ]]; then
-                    print_status "Trying to install additional system packages..."
-                    sudo dnf install -y pkgconfig || {
-                        print_warning "Failed to install pkgconfig"
-                    }
-                    continue
-                fi
-            fi
-            
-            # If we get here, it's not a retryable error
-            break
         fi
+
+        print_warning "$app installation failed on attempt $retry_count"
+
+        if grep -q "Timeout was reached\|spurious network error\|Resolving timed out" "$log_file"; then
+            print_warning "Network timeout detected for $app"
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_status "Waiting 10 seconds before retry..."
+                sleep 10
+                export CARGO_NET_TIMEOUT=180
+                export CARGO_NET_RETRY=10
+                continue
+            else
+                print_error "All network attempts failed for $app"
+            fi
+        elif grep -q "openssl\|OpenSSL" "$log_file"; then
+            print_warning "$app has OpenSSL issues - checking OpenSSL configuration..."
+            if ! pkg-config --exists openssl; then
+                print_error "OpenSSL not found by pkg-config, installing development packages..."
+                sudo dnf install -y libopenssl-devel.x86_64 lib64openssl-devel.x86_64 || {
+                    print_error "Failed to install OpenSSL development packages"
+                    return 1
+                }
+            fi
+            print_status "Retrying $app with explicit OpenSSL configuration..."
+            local ossl_log="/tmp/cargo_${app}_openssl.log"
+            OPENSSL_DIR=$(pkg-config --variable=prefix openssl) \
+            OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl) \
+            OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl) \
+            cargo install --locked "$app" 2>&1 | tee "$ossl_log"
+            if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
+                print_success "$app installed successfully with explicit OpenSSL config"
+                return 0
+            else
+                print_error "Failed to install $app even with explicit OpenSSL configuration"
+                return 1
+            fi
+        elif grep -q "linking\|Scrt1\|crti\|cannot open.*\.o" "$log_file"; then
+            print_warning "$app has linking issues — installing C runtime and build dependencies..."
+            if [[ $retry_count -lt $max_retries ]]; then
+                sudo dnf install -y gcc-c++ make cmake glibc-devel || {
+                    print_warning "Failed to install build dependencies"
+                }
+                continue
+            fi
+        elif grep -q "not found" "$log_file"; then
+            print_warning "$app has missing library issues — installing pkgconfig..."
+            if [[ $retry_count -lt $max_retries ]]; then
+                sudo dnf install -y pkgconfig || {
+                    print_warning "Failed to install pkgconfig"
+                }
+                continue
+            fi
+        fi
+
+        # Non-retryable error
+        break
     done
-    
-    # If all retries failed, try alternative installation method
-    print_status "Trying alternative installation method for $app..."
-    
-    # Try with different cargo source
-    if cargo install --locked --verbose --git https://github.com/rust-lang/crates.io-index "$app" 2>&1 | tee "/tmp/cargo_${app}_git.log"; then
-        print_success "$app installed successfully with git method"
+
+    # Final attempt without --locked in case of version conflicts
+    print_status "Final attempt for $app without --locked..."
+    local final_log="/tmp/cargo_${app}_nolocked.log"
+    cargo install --verbose "$app" 2>&1 | tee "$final_log"
+    if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
+        print_success "$app installed successfully without --locked"
         return 0
-    else
-        print_error "Failed to install $app with all methods"
-        return 1
     fi
+
+    print_error "Failed to install $app with all methods"
+    return 1
 }
 
 # Function to provide alternative installation methods
