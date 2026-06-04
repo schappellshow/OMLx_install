@@ -124,24 +124,54 @@ failed_packages=()
 
 # Check if packages.txt exists
 if [[ -s "$packages" ]]; then
-    # First, try to install all packages at once for efficiency
-    print_status "Attempting bulk package installation..."
-    if sudo dnf install -y $(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}'); then
-        print_success "All packages installed successfully in bulk!"
-    else
-        print_warning "Bulk installation failed — checking which packages are unavailable in the repos..."
+    mapfile -t remaining_packages < <(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}')
 
-        while IFS= read -r package || [[ -n "$package" ]]; do
-            [[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
-            package_name=$(echo "$package" | awk '{print $1}')
-            if ! dnf repoquery --available --exact --quiet "$package_name" 2>/dev/null | grep -q .; then
-                print_warning "⚠ Not found in repos: $package_name"
-                failed_packages+=("$package_name")
-            fi
-        done < "$packages"
+    print_status "Installing ${#remaining_packages[@]} packages..."
 
-        print_warning "Skipping package installation — fix packages.txt and re-run the script."
-    fi
+    while [[ ${#remaining_packages[@]} -gt 0 ]]; do
+        print_status "Attempting bulk install of ${#remaining_packages[@]} packages..."
+
+        if sudo dnf install -y "${remaining_packages[@]}" 2>/tmp/dnf_err.log; then
+            print_success "All ${#remaining_packages[@]} packages installed successfully!"
+            break
+        fi
+
+        # Parse which packages dnf couldn't resolve (handles dnf4 and dnf5 output formats)
+        mapfile -t newly_failed < <(
+            grep -oP "(?:No match for argument[: ]['\"]?|Cannot find[: ])\K\S+" /tmp/dnf_err.log |
+            tr -d "'\""
+        )
+
+        if [[ ${#newly_failed[@]} -eq 0 ]]; then
+            print_error "Bulk install failed — see dnf errors below:"
+            cat /tmp/dnf_err.log >&2
+            break
+        fi
+
+        for pkg in "${newly_failed[@]}"; do
+            print_warning "⚠ Not found in repos: $pkg — removing from install list"
+            failed_packages+=("$pkg")
+        done
+
+        # Rebuild remaining list without the unresolvable packages
+        new_remaining=()
+        for p in "${remaining_packages[@]}"; do
+            keep=true
+            for f in "${newly_failed[@]}"; do
+                if [[ "$p" == "$f" || "${p%.*}" == "$f" ]]; then
+                    keep=false
+                    break
+                fi
+            done
+            [[ "$keep" == true ]] && new_remaining+=("$p")
+        done
+        remaining_packages=("${new_remaining[@]}")
+
+        [[ ${#remaining_packages[@]} -gt 0 ]] && \
+            print_status "Retrying without ${#newly_failed[@]} unavailable package(s)..."
+    done
+
+    rm -f /tmp/dnf_err.log
 else
     print_error "Package list file is empty"
     exit 1
