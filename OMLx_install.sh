@@ -201,7 +201,6 @@ if command -v am >/dev/null 2>&1; then
         discord
         signal
         telegram
-        spotify
         mgba
         iloader
     )
