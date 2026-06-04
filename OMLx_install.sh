@@ -44,6 +44,10 @@ dotfiles="https://github.com/schappellshow/stow.git"
 packages="./packages.txt"
 stow_dir="$HOME/stow"
 script_dir="$(pwd)"
+LOG_FILE="$HOME/omlx_install_$(date +%Y%m%d_%H%M%S).log"
+
+# Tee all output (stdout + stderr) to log file for the entire script run
+exec > >(tee -a "$LOG_FILE") 2>&1
 
 # ─── Version pins — update these before running the script ───────────────────
 # Slack does not provide a "latest" redirect; pin to the current release.
@@ -1289,5 +1293,5 @@ print_status "2. Log out and log back in to apply dotfiles changes"
 print_status "3. Check that all applications are working correctly"
 print_status "4. Install cargo applications later if needed: bash install_cargo_apps.sh"
 
-print_status "\nInstallation log saved. Check for any warnings above."
+print_status "\nInstallation log saved to: $LOG_FILE"
 
