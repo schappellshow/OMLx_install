@@ -45,6 +45,13 @@ packages="./packages.txt"
 stow_dir="$HOME/stow"
 script_dir="$(pwd)"
 
+# ─── Version pins — update these before running the script ───────────────────
+# Slack does not provide a "latest" redirect; pin to the current release.
+SLACK_VERSION="4.49.89"
+# Proton Mail Bridge pinned release.
+BRIDGE_VERSION="3.24.2"
+# ─────────────────────────────────────────────────────────────────────────────
+
 print_status "Starting OpenMandriva installation script..."
 print_status "This script will install packages, applications, and configure your system"
 print_status "💡 TIP: You only need to enter your password once at the beginning!"
@@ -149,12 +156,14 @@ print_status "Installing AM (AppImage Manager)..."
 if command -v am >/dev/null 2>&1; then
     print_success "AM is already installed"
 else
-    curl -s -Lo /tmp/INSTALL https://raw.githubusercontent.com/ivan-hc/AM/main/INSTALL \
+    if curl -s -Lo /tmp/INSTALL https://raw.githubusercontent.com/ivan-hc/AM/main/INSTALL \
         && chmod a+x /tmp/INSTALL \
-        && sudo /tmp/INSTALL \
-        && rm /tmp/INSTALL || {
+        && sudo /tmp/INSTALL; then
+        rm /tmp/INSTALL
+    else
+        rm -f /tmp/INSTALL
         print_error "Failed to install AM, skipping AppImage installations"
-    }
+    fi
 fi
 
 if command -v am >/dev/null 2>&1; then
@@ -290,7 +299,8 @@ validate_download() {
         return 1
     fi
     
-    local size=$(stat -c%s "$file" 2>/dev/null || echo "0")
+    local size
+    size=$(stat -c%s "$file" 2>/dev/null || echo "0")
     if [[ $size -lt $min_size ]]; then
         print_error "Downloaded file is too small ($size bytes), likely an error page"
         return 1
@@ -498,11 +508,8 @@ else
 fi
 
 # Install Slack
-# Slack does not provide a "latest" redirect URL, so the version is pinned here.
-# Update SLACK_VERSION when a new release is available.
 # OpenMandriva's package naming differs from Fedora/RHEL, so we install with
 # --nodeps — the required .so files are present even though package names differ.
-SLACK_VERSION="4.49.89"
 SLACK_RPM_FILE="$TEMP_DIR/slack.rpm"
 SLACK_URL="https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm"
 
@@ -529,8 +536,6 @@ fi
 #   2. Symlink libcbor.so.0.12 -> libcbor.so.0.13 (minor soname bump, binary compatible)
 #   3. Install lib64fido2 with --nodeps to bypass the soname version check
 #   4. Install Bridge with --nodeps to bypass Fedora-specific package name mismatches
-# Update BRIDGE_VERSION when a new release is available.
-BRIDGE_VERSION="3.24.2"
 BRIDGE_RPM_FILE="$TEMP_DIR/protonmail-bridge.rpm"
 BRIDGE_URL="https://proton.me/download/bridge/protonmail-bridge-${BRIDGE_VERSION}-1.x86_64.rpm"
 
@@ -616,7 +621,8 @@ clone_and_build() {
     print_status "Installing $project_name..."
     
     # Create a temporary directory for cloning
-    local temp_dir="/tmp/${project_name}-$(date +%s)"
+    local temp_dir
+    temp_dir="/tmp/${project_name}-$(date +%s)"
     
     # Clone repository
     print_status "Cloning $project_name repository..."
