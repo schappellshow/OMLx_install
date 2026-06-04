@@ -128,9 +128,28 @@ failed_packages=()
 
 # Check if packages.txt exists
 if [[ -s "$packages" ]]; then
-    mapfile -t remaining_packages < <(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}')
+    mapfile -t all_packages < <(grep -v '^[[:space:]]*#' "$packages" | grep -v '^[[:space:]]*$' | awk '{print $1}')
 
-    print_status "Installing ${#remaining_packages[@]} packages..."
+    # Pre-filter already-installed packages — DNF5 fails the entire transaction
+    # if any package in the list is already installed, so we strip them up front.
+    print_status "Checking which packages need to be installed..."
+    declare -A installed_map
+    while IFS= read -r pkg; do
+        installed_map["$pkg"]=1
+    done < <(rpm -qa --queryformat '%{NAME}\n' 2>/dev/null)
+
+    remaining_packages=()
+    for pkg in "${all_packages[@]}"; do
+        pkg_name="${pkg%.*}"  # strip arch suffix (e.g. bat.x86_64 -> bat)
+        [[ -z "${installed_map[$pkg_name]}" ]] && remaining_packages+=("$pkg")
+    done
+
+    already_count=$(( ${#all_packages[@]} - ${#remaining_packages[@]} ))
+    print_status "${already_count} packages already installed, ${#remaining_packages[@]} to install."
+
+    if [[ ${#remaining_packages[@]} -eq 0 ]]; then
+        print_success "All packages from packages.txt are already installed!"
+    fi
 
     while [[ ${#remaining_packages[@]} -gt 0 ]]; do
         print_status "Attempting bulk install of ${#remaining_packages[@]} packages..."
@@ -215,7 +234,7 @@ if command -v am >/dev/null 2>&1; then
 
     for app in "${appimages[@]}"; do
         print_status "Installing $app..."
-        sudo am -i "$app" || {
+        sudo /usr/local/bin/am -i "$app" || {
             print_error "Failed to install $app, continuing..."
         }
     done
