@@ -1,5 +1,6 @@
 Installed packages
 7zip.x86_64                                        25.01-1                         rolling-x86_64
+GConf2.x86_64                                      3.2.6-17                        rolling-x86_64
 abattis-cantarell-fonts.noarch                     0.301-1                         rolling-x86_64
 accountsservice.x86_64                             23.13.9-1                       rolling-x86_64
 acl.x86_64                                         2.3.2-1                         rolling-x86_64
@@ -13,6 +14,7 @@ akonadi-mime.x86_64                                25.12.2-1                    
 alsa-lib.x86_64                                    1.2.15.3-1                      rolling-x86_64
 alsa-plugins-32bit.x86_64                          1.2.12-4                        rolling-x86_64
 alsa-utils.x86_64                                  1.2.15.2-1                      rolling-x86_64
+apache-commons-logging.noarch                      1.3.5-1                         rolling-x86_64
 appres.x86_64                                      1.0.7-1                         rolling-x86_64
 appstream.x86_64                                   1.1.1-1                         rolling-x86_64
 appstream-glib-i18n.noarch                         0.8.3-2                         <unknown>
@@ -102,6 +104,7 @@ dhcp-client.x86_64                                 3:4.4.3P1-1                  
 dhcp-common.noarch                                 3:4.4.3P1-1                     rolling-x86_64
 dialog.x86_64                                      1.3-0.20240619.1                rolling-x86_64
 diffutils.x86_64                                   3.12-1                          <unknown>
+discord.x86_64                                     1.0.140-1                       <unknown>
 distro-release-OpenMandriva.x86_64                 26.02-3                         rolling-x86_64
 distro-release-common.noarch                       26.02-3                         rolling-x86_64
 distro-release-desktop.noarch                      2:26.02-3                       rolling-x86_64
@@ -169,6 +172,7 @@ flashrom.x86_64                                    1:1.6.0-2                    
 flatpak.x86_64                                     1.16.3-1                        rolling-x86_64
 flexiblas.x86_64                                   3.4.5-1                         rolling-x86_64
 fluidsynth.x86_64                                  2.5.2-1                         rolling-x86_64
+flute.noarch                                       1.3.0-13.OOo31.0                rolling-x86_64
 fontconfig.x86_64                                  2.17.1-1                        rolling-x86_64
 fontpackages-filesystem.noarch                     1.44-13                         rolling-x86_64
 fonts-ttf-arimo.noarch                             1.0-1                           rolling-x86_64
@@ -178,6 +182,7 @@ fonts-ttf-cousine.noarch                           1.0-1                        
 fonts-ttf-decoratives.noarch                       1.4-7                           rolling-x86_64
 fonts-ttf-dejavu.noarch                            2.37-3                          rolling-x86_64
 fonts-ttf-droid.noarch                             1.0-22                          rolling-x86_64
+fonts-ttf-freefont.noarch                          20120503-1                      rolling-x86_64
 fonts-ttf-gelasio.noarch                           1.0-1                           rolling-x86_64
 fonts-ttf-hack.noarch                              3.003-1                         rolling-x86_64
 fonts-ttf-liberation.noarch                        2.1.5-1                         rolling-x86_64
@@ -296,6 +301,8 @@ hw-probe.x86_64                                    1.6.6-2                      
 hwdata.noarch                                      0.401-1                         rolling-x86_64
 hwinfo.x86_64                                      25.0-1                          rolling-x86_64
 i2c-tools.x86_64                                   4.4-2                           rolling-x86_64
+ibus.x86_64                                        1.5.29-1                        rolling-x86_64
+ibus-m17n.x86_64                                   1.4.36-1                        rolling-x86_64-extra
 iceauth.x86_64                                     1.0.10-1                        rolling-x86_64
 icu-data.x86_64                                    78.2-1                          rolling-x86_64
 ideviceactivation.x86_64                           1.1.2-0.20230802.1              rolling-x86_64
@@ -321,6 +328,14 @@ iso-codes-devel.noarch                             4.15.0-1                     
 iw.x86_64                                          6.17-1                          rolling-x86_64
 iwlwifi-agn-ucode.noarch                           20251125-1                      rolling-x86_64
 jasper.x86_64                                      4.2.8-1                         rolling-x86_64
+java-25-openjdk.x86_64                             25.0.3.0-1                      rolling-x86_64
+java-25-openjdk-devel.x86_64                       25.0.3.0-1                      rolling-x86_64
+java-25-openjdk-gui.x86_64                         25.0.3.0-1                      rolling-x86_64
+java-25-openjdk-module-java.datatransfer.x86_64    25.0.3.0-1                      rolling-x86_64
+java-25-openjdk-module-java.prefs.x86_64           25.0.3.0-1                      rolling-x86_64
+java-25-openjdk-module-java.xml.x86_64             25.0.3.0-1                      rolling-x86_64
+javapackages-filesystem.noarch                     6.4.0-2                         rolling-x86_64
+javapackages-tools.noarch                          6.4.0-2                         rolling-x86_64
 jfsutils.x86_64                                    1.1.15-19                       rolling-x86_64
 jpeg-xl.x86_64                                     0.11.2-1                        rolling-x86_64
 jpeg-xl-gdk-pixbuf.x86_64                          0.11.2-1                        rolling-x86_64
@@ -835,6 +850,7 @@ lib64absl_time.x86_64                              20250814.1-1                 
 lib64absl_time_zone.x86_64                         20250814.1-1                    rolling-x86_64
 lib64absl_tracing_internal.x86_64                  20250814.1-1                    rolling-x86_64
 lib64absl_utf8_for_code_point.x86_64               20250814.1-1                    rolling-x86_64
+lib64abw0.1_1.x86_64                               0.1.3-1                         rolling-x86_64
 lib64accounts-glib1.x86_64                         1.27-4                          rolling-x86_64
 lib64accounts-qt6.x86_64                           1.17-1                          rolling-x86_64
 lib64accountsservice.x86_64                        23.13.9-1                       rolling-x86_64
@@ -845,6 +861,7 @@ lib64aio1.x86_64                                   0.3.113-1                    
 lib64alsa-plugins.x86_64                           1.2.12-4                        rolling-x86_64
 lib64alsa-plugins-pulseaudio.x86_64                1.2.12-4                        rolling-x86_64
 lib64amd.x86_64                                    7.10.2-1                        <unknown>
+lib64anthy0.x86_64                                 9100h-25.20110409.5             rolling-x86_64
 lib64aom3.x86_64                                   3.12.1-1                        rolling-x86_64
 lib64appimage1.x86_64                              1.0.4.5-17                      rolling-x86_64
 lib64appindicator.x86_64                           12.10.1-1                       <unknown>
@@ -855,6 +872,7 @@ lib64appstream5.x86_64                             1.1.1-1                      
 lib64apr.x86_64                                    1:1.7.6-1                       rolling-x86_64
 lib64apr-util.x86_64                               1.6.3-2                         <unknown>
 lib64archive.x86_64                                3.8.4-3                         rolling-x86_64
+lib64argon2_1.x86_64                               20190702-4                      rolling-x86_64
 lib64asm1.x86_64                                   0.194-1                         rolling-x86_64
 lib64asound2.x86_64                                1.2.15.3-1                      rolling-x86_64
 lib64aspell15.x86_64                               0.60.8.1-1                      rolling-x86_64
@@ -915,9 +933,12 @@ lib64bluez3.x86_64                                 5.84-1                       
 lib64bluray2.x86_64                                1.3.4-2                         rolling-x86_64
 lib64boost_chrono.x86_64                           1.90.0-2                        rolling-x86_64
 lib64boost_filesystem.x86_64                       1.90.0-2                        rolling-x86_64
+lib64boost_iostreams.x86_64                        1.90.0-2                        rolling-x86_64
+lib64boost_locale.x86_64                           1.90.0-2                        rolling-x86_64
 lib64boost_process.x86_64                          1.90.0-2                        rolling-x86_64
 lib64boost_program_options.x86_64                  1.90.0-2                        rolling-x86_64
 lib64boost_thread.x86_64                           1.90.0-2                        rolling-x86_64
+lib64box2d2.x86_64                                 2.4.1-3                         rolling-x86_64
 lib64bpf.x86_64                                    1.6.2-1                         rolling-x86_64
 lib64brotli-devel.x86_64                           1.2.0-2                         rolling-x86_64
 lib64brotlicommon1.x86_64                          1.2.0-2                         rolling-x86_64
@@ -955,6 +976,7 @@ lib64cddb2.x86_64                                  1.3.2-23                     
 lib64cdio.x86_64                                   2.3.0-1                         rolling-x86_64
 lib64cdio_cdda2.x86_64                             2.0.1-1                         rolling-x86_64
 lib64cdio_paranoia2.x86_64                         2.0.1-1                         rolling-x86_64
+lib64cdr.x86_64                                    0.1.8-4                         rolling-x86_64
 lib64cdt.x86_64                                    14.1.2-1                        rolling-x86_64
 lib64celt0_2.x86_64                                0.11.3-21                       rolling-x86_64
 lib64cerf.x86_64                                   3.2-1                           rolling-x86_64
@@ -964,7 +986,11 @@ lib64chafa.x86_64                                  1.16.1-1                     
 lib64cholmod.x86_64                                7.10.2-1                        <unknown>
 lib64chromaprint.x86_64                            1.5.1-6                         rolling-x86_64
 lib64cloudproviders0.x86_64                        0.3.6-3                         rolling-x86_64
+lib64clucene-contribs-lib2.x86_64                  2.3.3.4-0.20141115.11           rolling-x86_64
+lib64clucene-core2.x86_64                          2.3.3.4-0.20141115.11           rolling-x86_64
+lib64clucene_shared2.x86_64                        2.3.3.4-0.20141115.11           rolling-x86_64
 lib64cmark0.31.1.x86_64                            0.31.1-3                        <unknown>
+lib64cmis.x86_64                                   0.6.2-3                         rolling-x86_64
 lib64coeurl.x86_64                                 0.3.1-4                         <unknown>
 lib64colamd.x86_64                                 7.10.2-1                        <unknown>
 lib64colord2.x86_64                                1.4.8-1                         rolling-x86_64
@@ -1037,6 +1063,7 @@ lib64dvbpsi10.x86_64                               1.3.3-2                      
 lib64dvdnav4.x86_64                                7.0.0-1                         rolling-x86_64
 lib64dvdread.x86_64                                7.0.1-1                         rolling-x86_64
 lib64dw1.x86_64                                    0.194-1                         rolling-x86_64
+lib64e-book.x86_64                                 0.1.3-12                        rolling-x86_64
 lib64ebml5.x86_64                                  1.4.5-1                         <unknown>
 lib64ebur128_1.x86_64                              1.2.6-1                         rolling-x86_64
 lib64edit.x86_64                                   3.1-1.20221030.1                rolling-x86_64
@@ -1048,9 +1075,12 @@ lib64elfutils-devel.x86_64                         0.194-1                      
 lib64ell0.x86_64                                   0.71-1                          rolling-x86_64
 lib64enchant1.x86_64                               1.6.1-6                         rolling-x86_64
 lib64enchant2_2.x86_64                             2.8.14-1                        rolling-x86_64
+lib64eot0.x86_64                                   0.01-10                         rolling-x86_64
 lib64epoxy-devel.x86_64                            1.5.10-9                        rolling-x86_64
 lib64epoxy0.x86_64                                 1.5.10-9                        rolling-x86_64
 lib64epub0.x86_64                                  0.2.2-18                        rolling-x86_64
+lib64epubgen0.1_1.x86_64                           0.1.1-2                         rolling-x86_64
+lib64etonyek0.1_1.x86_64                           0.1.10-1                        rolling-x86_64
 lib64evdev-devel.x86_64                            1.13.6-1                        rolling-x86_64
 lib64evdev2.x86_64                                 1.13.6-1                        rolling-x86_64
 lib64event2.1_7.x86_64                             2.1.12-3                        rolling-x86_64
@@ -1064,6 +1094,7 @@ lib64expat1.x86_64                                 2.7.4-1                      
 lib64exslt.x86_64                                  1.1.45-1                        rolling-x86_64
 lib64ext2fs-devel.x86_64                           1.47.3-1                        rolling-x86_64
 lib64ext2fs2.x86_64                                1.47.3-1                        rolling-x86_64
+lib64exttextcat2.0_0.x86_64                        3.4.7-1                         rolling-x86_64
 lib64f2fs10.x86_64                                 1.16.0-1                        rolling-x86_64
 lib64f2fs_format9.x86_64                           1.16.0-1                        rolling-x86_64
 lib64fa.x86_64                                     1.14.1-1                        rolling-x86_64
@@ -1077,6 +1108,7 @@ lib64ffi-devel.x86_64                              3.4.7-1                      
 lib64ffi8.x86_64                                   3.4.7-1                         rolling-x86_64
 lib64fftw3_3.x86_64                                3.3.10-4                        rolling-x86_64
 lib64fftw3f3.x86_64                                3.3.10-4                        rolling-x86_64
+lib64fido2.x86_64                                  1.16.0-1                        <unknown>
 lib64flac.x86_64                                   1.5.0-1                         rolling-x86_64
 lib64flatpak-gir1.0.x86_64                         1.16.3-1                        rolling-x86_64
 lib64flatpak0.x86_64                               1.16.3-1                        rolling-x86_64
@@ -1092,6 +1124,7 @@ lib64fontenc1.x86_64                               1.1.8-1                      
 lib64formw.x86_64                                  6.5+20250419-1                  rolling-x86_64
 lib64freeaptx0.x86_64                              0.2.2-1                         rolling-x86_64
 lib64freebl3.x86_64                                1:3.119.1-1                     rolling-x86_64
+lib64freehand0.1_1.x86_64                          0.1.2-4                         rolling-x86_64
 lib64freerdp.x86_64                                3.20.2-2                        rolling-x86_64
 lib64freetype-gir2.0.x86_64                        1.86.0-5                        rolling-x86_64
 lib64freetype6.x86_64                              2.14.1-1                        rolling-x86_64
@@ -1109,6 +1142,7 @@ lib64gamemode0.x86_64                              1.8.2-1                      
 lib64gbm1.x86_64                                   26.0.0-1                        rolling-x86_64
 lib64gcc-devel.x86_64                              15.2.1-0.20260103.1             rolling-x86_64
 lib64gcc1.x86_64                                   15.2.1-0.20260103.1             rolling-x86_64
+lib64gconf-gir2.0.x86_64                           3.2.6-17                        rolling-x86_64
 lib64gconf2_4.x86_64                               3.2.6-17                        rolling-x86_64
 lib64gcr4_0.x86_64                                 4.4.0.1-2                       rolling-x86_64
 lib64gcrypt.x86_64                                 1.12.0-2                        rolling-x86_64
@@ -1262,6 +1296,7 @@ lib64hunspell1.7_0.x86_64                          1.7.2-3                      
 lib64hwy.x86_64                                    1.1.0-1                         rolling-x86_64
 lib64hyphen0.x86_64                                2.8.8-14                        <unknown>
 lib64i2c0.x86_64                                   4.4-2                           rolling-x86_64
+lib64ibus-gir1.0.x86_64                            1.5.29-1                        rolling-x86_64
 lib64ibus1.0_5.x86_64                              1.5.29-1                        rolling-x86_64
 lib64ibverbs.x86_64                                41.0-1                          <unknown>
 lib64ical3.x86_64                                  3.0.20-3                        rolling-x86_64
@@ -1302,6 +1337,7 @@ lib64jansson4.x86_64                               2.14-2                       
 lib64jasper.x86_64                                 4.2.8-1                         rolling-x86_64
 lib64javascriptcore-gir4.1.x86_64                  2.50.4-2                        rolling-x86_64
 lib64javascriptcoregtk4.1.x86_64                   2.50.4-2                        rolling-x86_64
+lib64javascriptcoregtk6.0.x86_64                   2.50.4-2                        rolling-x86_64
 lib64jaylink.x86_64                                0.4.0-1                         rolling-x86_64
 lib64jbig2.x86_64                                  2.1-2                           rolling-x86_64
 lib64jbig2dec0.x86_64                              0.19-2                          rolling-x86_64
@@ -1344,6 +1380,7 @@ lib64kscreenlocker.x86_64                          6.5.5-1                      
 lib64kvazaar.x86_64                                2.3.2-1                         rolling-x86_64-restricted
 lib64kworkspace6.x86_64                            6.5.5-3                         rolling-x86_64
 lib64lame0.x86_64                                  3.100-7                         rolling-x86_64
+lib64langtag1.x86_64                               0.6.7-1                         rolling-x86_64
 lib64lapack.x86_64                                 3.12.1-1                        rolling-x86_64
 lib64lastlog2.x86_64                               2.41.2-4                        rolling-x86_64
 lib64lber.x86_64                                   2.6.12-1                        rolling-x86_64
@@ -1353,6 +1390,7 @@ lib64ldac2.x86_64                                  2.0.2.3-1                    
 lib64ldap.x86_64                                   2.6.12-1                        rolling-x86_64
 lib64ldap2.4.x86_64                                2.6.12-1                        rolling-x86_64
 lib64ldb.x86_64                                    4.23.4-2                        rolling-x86_64
+lib64libcbor.x86_64                                0.13.0-1                        rolling-x86_64
 lib64lilv0.x86_64                                  0.26.2-2                        rolling-x86_64
 lib64liveMedia107.x86_64                           2022.12.01-1                    <unknown>
 lib64llvm.x86_64                                   21.1.8-1                        rolling-x86_64
@@ -1370,6 +1408,10 @@ lib64lzma-devel.x86_64                             5.8.1-1                      
 lib64lzma5.x86_64                                  5.8.1-1                         rolling-x86_64
 lib64lzo-devel.x86_64                              2.10-8                          <unknown>
 lib64lzo2.x86_64                                   2.10-8                          rolling-x86_64
+lib64m17n-lib-core0.x86_64                         1.8.5-1                         rolling-x86_64
+lib64m17n-lib-flt0.x86_64                          1.8.5-1                         rolling-x86_64
+lib64m17n-lib-gui0.x86_64                          1.8.5-1                         rolling-x86_64
+lib64m17n-lib0.x86_64                              1.8.5-1                         rolling-x86_64
 lib64mad0.x86_64                                   0.15.1b-31                      <unknown>
 lib64magic1.x86_64                                 5.46-2                          rolling-x86_64
 lib64manette0.2_0.x86_64                           0.2.12-2                        rolling-x86_64
@@ -1406,12 +1448,15 @@ lib64mpfr6.x86_64                                  4.2.2-1                      
 lib64mpg123_0.x86_64                               1.33.3-1                        rolling-x86_64
 lib64msgraph.x86_64                                0.3.3-2                         rolling-x86_64
 lib64mspack0.x86_64                                0.5-0.2.alpha                   <unknown>
+lib64mspub.x86_64                                  0.1.4-12                        rolling-x86_64
 lib64mtdev1.x86_64                                 1.1.7-1                         rolling-x86_64
 lib64mtp9.x86_64                                   1.1.21-1                        rolling-x86_64
 lib64mtxclient.x86_64                              0.10.1-1                        rolling-x86_64
 lib64multipath.x86_64                              0.14.3-1                        rolling-x86_64
+lib64mwaw0.3_3.x86_64                              0.3.22-1                        rolling-x86_64
 lib64mypaint0.x86_64                               1.6.1-3                         <unknown>
 lib64mysofa1.x86_64                                1.3.2-2                         rolling-x86_64
+lib64mythes1.2_0.x86_64                            1.2.4-7                         rolling-x86_64
 lib64natpmp1.x86_64                                20230423-2                      <unknown>
 lib64nautilus-extension.x86_64                     49.3-2                          rolling-x86_64
 lib64ncurses6.x86_64                               6.5+20250419-1                  rolling-x86_64
@@ -1455,10 +1500,12 @@ lib64nss_resolve.x86_64                            259.1-1                      
 lib64nss_systemd.x86_64                            259.1-1                         rolling-x86_64
 lib64ntfs-3g.x86_64                                2022.10.3-1                     rolling-x86_64
 lib64numa1.x86_64                                  2.0.19-1                        rolling-x86_64
+lib64numbertext1.0_0.x86_64                        1.0.11-1                        rolling-x86_64
 lib64nvme.x86_64                                   1.16.1-1                        rolling-x86_64
 lib64obs.x86_64                                    32.0.2-2                        rolling-x86_64-restricted
 lib64obs-frontend-api.x86_64                       32.0.2-2                        rolling-x86_64-restricted
 lib64obs-scripting.x86_64                          32.0.2-2                        rolling-x86_64-restricted
+lib64odfgen.x86_64                                 0.1.8-1                         rolling-x86_64
 lib64oeffis.x86_64                                 1.5.0-1                         rolling-x86_64
 lib64ogg0.x86_64                                   1.3.5-4                         rolling-x86_64
 lib64olm3.x86_64                                   3.2.16-1                        <unknown>
@@ -1480,15 +1527,19 @@ lib64opensc6.x86_64                                0.20.0-3                     
 lib64openssl-devel.x86_64                          3.6.0-2                         rolling-x86_64
 lib64opus.x86_64                                   1.6.1-1                         rolling-x86_64
 lib64orc0.4_0.x86_64                               0.4.32-2                        rolling-x86_64
+lib64orcus.x86_64                                  0.21.0-1                        rolling-x86_64
+lib64orcus-parser.x86_64                           0.21.0-1                        rolling-x86_64
 lib64osinfo-gir1.0.x86_64                          1.11.0-1                        <unknown>
 lib64osinfo1.0_0.x86_64                            1.11.0-1                        <unknown>
 lib64osmesa8.x86_64                                25.0.7-2                        rolling-x86_64
 lib64ostree1.x86_64                                2024.9-1                        <unknown>
+lib64otf1.x86_64                                   0.9.16-2                        rolling-x86_64
 lib64out123_0.x86_64                               1.33.3-1                        rolling-x86_64
 lib64p11-kit.x86_64                                0.25.5-2                        rolling-x86_64
 lib64p11_3.x86_64                                  0.4.10-2                        rolling-x86_64
 lib64packagekit-glib2_18.x86_64                    1.3.3-3                         rolling-x86_64
 lib64packagekitqt6_5.x86_64                        1.1.2-2                         rolling-x86_64
+lib64pagemaker0.0.x86_64                           0.0.4-3                         rolling-x86_64
 lib64pam0.x86_64                                   1:1.7.1-1                       rolling-x86_64
 lib64pam_misc0.x86_64                              1:1.7.1-1                       rolling-x86_64
 lib64pam_userpass1.x86_64                          1.0.2-24                        rolling-x86_64
@@ -1633,16 +1684,21 @@ lib64qt5xml5.x86_64                                5.15.18-2                    
 lib64qtspeech5.x86_64                              5.15.18-1                       rolling-x86_64
 lib64quadmath0.x86_64                              15.2.1-0.20260103.1             rolling-x86_64
 lib64qxlsx.x86_64                                  1.5.0-2                         rolling-x86_64
+lib64qxp0.0_0.x86_64                               0.0.2-8                         rolling-x86_64
 lib64radiusclient0.x86_64                          0.3.2-29                        rolling-x86_64
+lib64raptor2_0.x86_64                              2.0.16-4                        rolling-x86_64
+lib64rasqal3.x86_64                                0.9.33-5                        rolling-x86_64
 lib64rav1e.x86_64                                  0.8.1-1                         rolling-x86_64
 lib64raw.x86_64                                    0.21.5-1                        rolling-x86_64
 lib64raw1394_11.x86_64                             2.1.2-3                         rolling-x86_64
 lib64raw_r.x86_64                                  0.21.5-1                        rolling-x86_64
+lib64rdf0.x86_64                                   1.0.17-16                       rolling-x86_64
 lib64rdmacm.x86_64                                 41.0-1                          <unknown>
 lib64re2.x86_64                                    2025.11.05-2                    rolling-x86_64
 lib64readline8.x86_64                              8.3-1                           rolling-x86_64
 lib64repo.x86_64                                   1.20.0-1                        rolling-x86_64
 lib64rest1.0_0.x86_64                              0.9.1-9                         rolling-x86_64
+lib64revenge0.0_0.x86_64                           0.0.5-1                         rolling-x86_64
 lib64rhash0.x86_64                                 1.4.2-1                         <unknown>
 lib64roc.x86_64                                    0.4.0-1                         rolling-x86_64
 lib64rom1394_0.x86_64                              0.5.4-16                        rolling-x86_64
@@ -1674,6 +1730,7 @@ lib64secret1_0.x86_64                              0.21.7-2                     
 lib64selinux.x86_64                                3.8.1-1                         rolling-x86_64
 lib64semanage.x86_64                               1:3.5-1                         <unknown>
 lib64sepol.x86_64                                  3.8.1-1                         rolling-x86_64
+lib64sequoia-sqv.x86_64                            1.3.0-1                         rolling-x86_64
 lib64serd.x86_64                                   0.32.6-1                        rolling-x86_64
 lib64serf1_1.x86_64                                1.3.9-6                         <unknown>
 lib64sgutils2.x86_64                               1.48-1                          rolling-x86_64
@@ -1726,6 +1783,7 @@ lib64ss2.x86_64                                    1.47.3-1                     
 lib64ssh2_1.x86_64                                 1.11.1-1                        rolling-x86_64
 lib64ssh4.x86_64                                   1:0.10.6-1                      rolling-x86_64
 lib64ssl3.x86_64                                   3.6.0-2                         rolling-x86_64
+lib64staroffice0.0_0.x86_64                        1:0.0.7-1                       rolling-x86_64
 lib64startup-notification-1_0.x86_64               0.12-20                         rolling-x86_64
 lib64stdc++-devel.x86_64                           15.2.1-0.20260103.1             rolling-x86_64
 lib64stdc++6.x86_64                                15.2.1-0.20260103.1             rolling-x86_64
@@ -1831,6 +1889,7 @@ lib64virt-glib-gir1.0.x86_64                       5.0.0-1                      
 lib64virt-glib1.0_0.x86_64                         5.0.0-1                         <unknown>
 lib64virt-lxc.x86_64                               11.9.0-1                        rolling-x86_64
 lib64virt-qemu.x86_64                              11.9.0-1                        rolling-x86_64
+lib64visio.x86_64                                  0.1.8-4                         rolling-x86_64
 lib64vlc5.x86_64                                   3.0.23-1                        rolling-x86_64
 lib64vlccore9.x86_64                               3.0.23-1                        rolling-x86_64
 lib64vncclient1.x86_64                             0.9.15-1                        <unknown>
@@ -1860,6 +1919,7 @@ lib64wayland-server.x86_64                         1.24.0-2                     
 lib64wbclient.x86_64                               4.23.4-2                        rolling-x86_64
 lib64webkit2gtk-gir4.1.x86_64                      2.50.4-2                        rolling-x86_64
 lib64webkit2gtk4.1.x86_64                          2.50.4-2                        rolling-x86_64
+lib64webkit2gtk6.0.x86_64                          2.50.4-2                        rolling-x86_64
 lib64webp.x86_64                                   1.6.0-1                         rolling-x86_64
 lib64webpdemux.x86_64                              1.6.0-1                         rolling-x86_64
 lib64webpmux.x86_64                                1.6.0-1                         rolling-x86_64
@@ -1872,6 +1932,9 @@ lib64wmf0.2_7.x86_64                               0.2.12-2                     
 lib64wmflite0.2_7.x86_64                           0.2.12-2                        rolling-x86_64
 lib64woff2common1.x86_64                           1.0.2-1                         <unknown>
 lib64woff2dec1.x86_64                              1.0.2-1                         <unknown>
+lib64wpd0.10_10.x86_64                             0.10.3-5                        rolling-x86_64
+lib64wpg0.3_3.x86_64                               1:0.3.3-4                       rolling-x86_64
+lib64wps0.4_4.x86_64                               1:0.4.14-1                      rolling-x86_64
 lib64wrap0.x86_64                                  7.6-66                          rolling-x86_64
 lib64wx_baseu3.2_0.x86_64                          3.2.9-1                         rolling-x86_64
 lib64wx_baseu_net3.2_0.x86_64                      3.2.9-1                         rolling-x86_64
@@ -1971,6 +2034,7 @@ lib64xml++.x86_64                                  2.42.3-4                     
 lib64xml2.x86_64                                   2.13.8-3                        rolling-x86_64
 lib64xml2-gir2.0.x86_64                            1.86.0-5                        rolling-x86_64
 lib64xmlb.x86_64                                   0.3.24-1                        rolling-x86_64
+lib64xmlsec1-nss1.x86_64                           1.3.6-1                         rolling-x86_64
 lib64xmlsec1_1.x86_64                              1.3.6-1                         rolling-x86_64
 lib64xmu6.x86_64                                   1.2.1-1                         rolling-x86_64
 lib64xmuu1.x86_64                                  1.2.1-1                         rolling-x86_64
@@ -2004,10 +2068,12 @@ lib64z1.x86_64                                     2.3.3-1                      
 lib64z3.x86_64                                     4.13.3-3                        rolling-x86_64
 lib64zck1.x86_64                                   1.5.1-1                         rolling-x86_64
 lib64zip5.x86_64                                   1.11.4-1                        rolling-x86_64
+lib64zmf.x86_64                                    0.0.2-12                        rolling-x86_64
 lib64zmq.x86_64                                    4.3.5-1                         rolling-x86_64
 lib64zstd.x86_64                                   1.5.7-1                         rolling-x86_64
 lib64zstd-devel.x86_64                             1.5.7-1                         <unknown>
 lib64zvbi0.x86_64                                  0.2.35-7                        rolling-x86_64
+lib64zxcvbn-c.x86_64                               2.5-1                           rolling-x86_64
 libEGL1.x86_64                                     1.7.0-7                         rolling-x86_64
 libEGL_mesa0.x86_64                                26.0.0-1                        rolling-x86_64
 libGL1.x86_64                                      1.7.0-7                         rolling-x86_64
@@ -2034,6 +2100,7 @@ libavahi-compat-libdns_sd1.x86_64                  0.9.rc2-1                    
 libavcodec.x86_64                                  8.0.1-1                         rolling-x86_64
 libavformat.x86_64                                 8.0.1-1                         rolling-x86_64
 libavutil.x86_64                                   8.0.1-1                         rolling-x86_64
+libbase.noarch                                     1:1.1.3-10.0                    rolling-x86_64
 libblkid1.x86_64                                   2.41.2-4                        rolling-x86_64
 libblockdev-plugins-all.x86_64                     3.4.0-2                         rolling-x86_64
 libbluez3.x86_64                                   5.84-1                          rolling-x86_64
@@ -2074,10 +2141,13 @@ libepoxy0.x86_64                                   1.5.10-9                     
 libexif12.x86_64                                   0.6.25-1                        rolling-x86_64
 libexif12-common.x86_64                            0.6.25-1                        rolling-x86_64
 libexpat1.x86_64                                   2.7.4-1                         rolling-x86_64
+libexttextcat-data.x86_64                          3.4.7-1                         rolling-x86_64
 libffi-devel.x86_64                                3.4.7-1                         <unknown>
 libffi8.x86_64                                     3.4.7-1                         <unknown>
 libfftw3f3.x86_64                                  3.3.10-4                        rolling-x86_64
 libfontconfig.x86_64                               2.17.1-1                        rolling-x86_64
+libfonts.noarch                                    1:1.1.3-13                      rolling-x86_64
+libformula.noarch                                  1:1.1.3-10.0                    rolling-x86_64
 libfreetype6.x86_64                                2.14.1-1                        rolling-x86_64
 libfribidi0.x86_64                                 1.0.16-1                        <unknown>
 libftdi.x86_64                                     1.5-3                           rolling-x86_64
@@ -2139,9 +2209,11 @@ libksane.x86_64                                    25.12.2-1                    
 libkscreen.x86_64                                  6.5.5-1                         rolling-x86_64
 libkscreen-x11.x86_64                              6.5.5-1                         rolling-x86_64
 libksysguard.x86_64                                6.5.5-1                         rolling-x86_64
+liblayout.noarch                                   0.2.10-10                       rolling-x86_64
 liblcms2.x86_64                                    2.17-1                          rolling-x86_64
 libllvm.x86_64                                     21.1.8-1                        rolling-x86_64
 liblm_sensors5.x86_64                              1:3.6.0-3                       rolling-x86_64
+libloader.noarch                                   1:1.1.3-9.0                     rolling-x86_64
 libltdl7.x86_64                                    2.5.4-3                         rolling-x86_64
 liblzma5.x86_64                                    5.8.1-1                         <unknown>
 liblzo2.x86_64                                     2.10-8                          <unknown>
@@ -2152,6 +2224,7 @@ libncurses.x86_64                                  6.5+20250419-1               
 libnettle8.x86_64                                  1:3.10.1-1                      rolling-x86_64
 libnma.x86_64                                      1.10.6-8                        rolling-x86_64
 libnotify.x86_64                                   0.8.8-1                         rolling-x86_64
+libnumbertext.x86_64                               1.0.11-1                        rolling-x86_64
 libogg0.x86_64                                     1.3.5-4                         rolling-x86_64
 libopenal.x86_64                                   1.25.0-1                        rolling-x86_64
 libopenssl-devel.x86_64                            3.6.0-2                         rolling-x86_64
@@ -2178,12 +2251,24 @@ libpng.x86_64                                      1.6.55-1                     
 libpulseaudio.x86_64                               17.0-2                          rolling-x86_64
 libpwquality-common.noarch                         1.4.5-2                         rolling-x86_64
 libqalculate-data.noarch                           5.9.0-2                         rolling-x86_64
+libreoffice.x86_64                                 26.2.1.1-1                      rolling-x86_64
+libreoffice-base.x86_64                            26.2.1.1-1                      rolling-x86_64
+libreoffice-calc.x86_64                            26.2.1.1-1                      rolling-x86_64
+libreoffice-common.x86_64                          26.2.1.1-1                      rolling-x86_64
+libreoffice-draw.x86_64                            26.2.1.1-1                      rolling-x86_64
+libreoffice-impress.x86_64                         26.2.1.1-1                      rolling-x86_64
+libreoffice-java.x86_64                            26.2.1.1-1                      rolling-x86_64
+libreoffice-math.x86_64                            26.2.1.1-1                      rolling-x86_64
+libreoffice-style-breeze.x86_64                    26.2.1.1-1                      rolling-x86_64
+libreoffice-writer.x86_64                          26.2.1.1-1                      rolling-x86_64
 libreport-filesystem.x86_64                        2.17.15-3                       rolling-x86_64
+librepository.noarch                               1:1.1.3-9.0                     rolling-x86_64
 librsvg.x86_64                                     2.61.3-1                        rolling-x86_64
 libsamplerate0.x86_64                              0.2.2-2                         rolling-x86_64
 libsane.x86_64                                     1.3.1-1                         rolling-x86_64
 libsbc1.x86_64                                     2.0-1                           rolling-x86_64
 libselinux-utils.x86_64                            3.8.1-1                         rolling-x86_64
+libserializer.noarch                               1:1.1.2-10.0                    rolling-x86_64
 libsm6.x86_64                                      1.2.6-1                         rolling-x86_64
 libsndfile1.x86_64                                 1.2.2-2                         rolling-x86_64
 libsoxr0.x86_64                                    0.1.3-14                        rolling-x86_64
@@ -2271,6 +2356,7 @@ lm_sensors.x86_64                                  1:3.6.0-3                    
 locales.x86_64                                     6:2.42-2                        rolling-x86_64
 locales-en.x86_64                                  6:2.42-2                        rolling-x86_64
 logrotate.x86_64                                   3.22.0-1                        rolling-x86_64
+lpsolve.x86_64                                     5.5.2.5-4                       rolling-x86_64
 lsb-core-noarch.x86_64                             11.1.0-2                        <unknown>
 lsb-release.noarch                                 3.3-1.2602                      rolling-x86_64
 lsd.x86_64                                         0.16.0-1                        <unknown>
@@ -2292,6 +2378,8 @@ luajit-mpack.x86_64                                1.0.12-1                     
 luit.x86_64                                        1.1.1-14                        rolling-x86_64
 lutris.noarch                                      0.5.19-4                        rolling-x86_64
 lvm2.x86_64                                        2.03.38-1                       rolling-x86_64
+m17n-db.noarch                                     1.8.10-1                        rolling-x86_64
+m17n-lib.x86_64                                    1.8.5-1                         rolling-x86_64
 m4.x86_64                                          1.4.21-1                        rolling-x86_64
 mailcap.noarch                                     2.0.4-41                        rolling-x86_64
 mailspring.x86_64                                  1.21.1-0.1                      <unknown>
@@ -2400,6 +2488,8 @@ pbzip2.x86_64                                      1.1.13-6                     
 pciutils.x86_64                                    3.13.0-1                        rolling-x86_64
 pcsc-lite.x86_64                                   2.0.3-1                         rolling-x86_64
 pdfarranger.noarch                                 1.13.0-1                        rolling-x86_64-extra
+pentaho-libxml.noarch                              1:1.1.3-10.3                    rolling-x86_64
+pentaho-reporting-flow-engine.noarch               1:0.9.4-8.3                     rolling-x86_64
 perl.x86_64                                        4:5.42.0-33                     rolling-x86_64
 perl-Carp.noarch                                   1.54-33                         rolling-x86_64
 perl-Compress-Raw-Bzip2.x86_64                     2.214000-33                     rolling-x86_64
@@ -2511,9 +2601,10 @@ ppp-radius.x86_64                                  2.5.2-1                      
 pptp-linux.x86_64                                  1.10.0-3                        rolling-x86_64
 printer-testpages.noarch                           2013-12                         rolling-x86_64
 procps-ng.x86_64                                   4.0.4-1                         rolling-x86_64
-proton-pass.x86_64                                 1.32.11-1                       <unknown>
+proton-pass.x86_64                                 1.37.0-1                        <unknown>
 proton-vpn-gtk-app.x86_64                          4.14.0-2                        rolling-x86_64
 proton-vpn-local-agent.x86_64                      1.6.0-4                         rolling-x86_64
+protonmail-bridge.x86_64                           3.22.0-1                        <unknown>
 psmisc.x86_64                                      23.7-1                          rolling-x86_64
 publicsuffix-list-dafsa.noarch                     20230601-1                      rolling-x86_64
 pulseaudio.x86_64                                  17.0-2                          rolling-x86_64
@@ -2715,6 +2806,7 @@ rpcbind.x86_64                                     1.2.6-2                      
 rpm.x86_64                                         6.0.1-2                         rolling-x86_64
 rpm-build.x86_64                                   6.0.1-2                         rolling-x86_64
 rpm-helper.noarch                                  0.24.20-3                       rolling-x86_64
+rpm-javamacros.noarch                              1.0-5                           rolling-x86_64
 rpm-plugin-syslog.x86_64                           6.0.1-2                         rolling-x86_64
 rpm-plugin-systemd-inhibit.x86_64                  6.0.1-2                         rolling-x86_64
 rpm-provreq-qml.noarch                             6.2.0-1                         rolling-x86_64
@@ -2729,6 +2821,7 @@ rust-ripgrep.x86_64                                14.1.1-2                     
 rust-srpm-macros.x86_64                            26.3-1                          <unknown>
 rust-std-static.x86_64                             1.93.0-1                        rolling-x86_64
 rustdesk.x86_64                                    1.4.6-0                         <unknown>
+sac.noarch                                         1.3-24                          rolling-x86_64
 samba-libs.x86_64                                  4.23.4-2                        rolling-x86_64
 sane-airscan.x86_64                                0.99.27-2                       rolling-x86_64
 sane-backends.x86_64                               1.3.1-1                         rolling-x86_64
@@ -2749,6 +2842,7 @@ signon-plugin-oauth2.x86_64                        0.25-1                       
 signon-ui.x86_64                                   0.17-0.20240225.1               rolling-x86_64
 signond.x86_64                                     8.62-1                          rolling-x86_64
 skanlite.x86_64                                    25.12.2-1                       rolling-x86_64
+slack.x86_64                                       4.49.89-0.1.el8                 <unknown>
 smartmontools.x86_64                               7.4-1                           rolling-x86_64
 smproxy.x86_64                                     1.0.7-1                         rolling-x86_64
 socat.x86_64                                       1.8.1.1-1                       rolling-x86_64
@@ -2759,6 +2853,7 @@ sound-theme-freedesktop.noarch                     0.8-15                       
 spec-helper.noarch                                 0.31.54-3                       <unknown>
 spectacle.x86_64                                   6.5.5-1                         rolling-x86_64
 spice-gtk.x86_64                                   0.42-3                          <unknown>
+spotify-launcher.x86_64                            0.6.4-1                         rolling-x86_64-non-free
 sqlite-tools.x86_64                                3.51.2-1                        rolling-x86_64
 steam.x86_64                                       1.0.0.82-1                      rolling-x86_64-non-free
 stellarium.x86_64                                  25.2-1                          rolling-x86_64-extra
@@ -2807,6 +2902,9 @@ udisks.x86_64                                      2.11.0-1                     
 udisks-btrfs.x86_64                                2.11.0-1                        rolling-x86_64
 umockdev.x86_64                                    0.19.4-1                        rolling-x86_64
 umu-launcher.x86_64                                1.3.0-1                         rolling-x86_64
+unicode-cldr-annotations.noarch                    37.0_13.0_0_2-3                 rolling-x86_64
+unicode-ucd.noarch                                 17.0.0-1                        rolling-x86_64
+unicode-ucd-unihan.noarch                          17.0.0-1                        rolling-x86_64
 unzip.x86_64                                       6.00-3                          rolling-x86_64
 upower.x86_64                                      1.90.9-1                        rolling-x86_64
 urw-fonts.noarch                                   2020.09.10-2                    rolling-x86_64
@@ -2835,10 +2933,11 @@ vte3-profile.noarch                                0.82.3-2                     
 vulkan-headers.noarch                              1.4.341-1                       rolling-x86_64
 vulkan-loader.x86_64                               1.4.341-1                       rolling-x86_64
 vulkan-tools.x86_64                                1.4.341-1                       rolling-x86_64
-warp-terminal.x86_64                               v0.2026.05.20.09.21.stable_02-1 warpdotdev
+warp-terminal.x86_64                               v0.2026.05.20.09.21.stable_03-1 warpdotdev
 wayland-protocols-devel.noarch                     1.47-1                          rolling-x86_64
 wayland-tools.x86_64                               1.24.0-2                        rolling-x86_64
 wayland-utils.x86_64                               1.3.0-1                         rolling-x86_64
+webkit.x86_64                                      2.50.4-2                        rolling-x86_64
 webkit-common.x86_64                               2.50.4-2                        rolling-x86_64
 webkit4.1.x86_64                                   2.50.4-2                        rolling-x86_64
 wget.x86_64                                        1.25.0-1                        rolling-x86_64
@@ -2946,9 +3045,11 @@ xvidtune.x86_64                                    1.0.4-1                      
 xvinfo.x86_64                                      1.1.5-1                         rolling-x86_64
 xwininfo.x86_64                                    1.1.6-1                         rolling-x86_64
 xz.x86_64                                          5.8.1-1                         rolling-x86_64
+zenity-gtk.x86_64                                  4.2.1-1                         rolling-x86_64
 zenity-wrapper.noarch                              1.0-2                           rolling-x86_64
 zip.x86_64                                         3.0-24                          rolling-x86_64
 zix.x86_64                                         0.8.0-1                         rolling-x86_64
+zoom.x86_64                                        7.0.5.3034-1                    @commandline
 zram-generator.x86_64                              1.1.2-2                         rolling-x86_64
 zsh.x86_64                                         5.9-5                           <unknown>
 zstd.x86_64                                        1.5.7-1                         rolling-x86_64
