@@ -814,9 +814,9 @@ sudo dnf install -y extra-cmake-modules \
     print_warning "Some build dependencies failed to install, glass plugin may not build"
 }
 
-GLASS_VERSION="6.6.1-2"
-GLASS_URL="https://github.com/4v3ngR/kwin-effects-glass/archive/refs/tags/v${GLASS_VERSION}.tar.gz"
-GLASS_ARCHIVE="/tmp/kwin-effects-glass-v${GLASS_VERSION}.tar.gz"
+GLASS_VERSION="6.6.4-1"
+GLASS_URL="https://github.com/4v3ngR/kwin-effects-glass/archive/refs/tags/${GLASS_VERSION}.tar.gz"
+GLASS_ARCHIVE="/tmp/kwin-effects-glass-${GLASS_VERSION}.tar.gz"
 
 # Download and extract kwin-effects-glass
 print_status "Downloading kwin-effects-glass v${GLASS_VERSION}..."
